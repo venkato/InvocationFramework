@@ -1,0 +1,4 @@
+moduleName=JdkLoggingMethods
+moduleVersion=0.1
+extensionClasses=net.sf.jremoterun.utilities.nonjdk.log.JdkLoggerExtentionClass,net.sf.jremoterun.utilities.nonjdk.log.FileExtentionClass
+

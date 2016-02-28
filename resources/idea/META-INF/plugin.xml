@@ -1,0 +1,104 @@
+<idea-plugin>
+  <id>idea.plugins.thirdparty.filecompletion</id>
+  <name>File completion plugin</name>
+  <version>1.04</version>
+  <vendor url="https://github.com/venkato/ideafilecompletion">File completion plugin</vendor>
+
+  <description><![CDATA[
+      <div xmlns="http://www.w3.org/1999/html">
+      <p>Features:</p>
+<ul>
+<li>  File name completion </li>
+<li>  Open file by 'Goto declaration' standard shortcut </li>
+<li>  Open file in external tool </li>
+<li>  Java and groovy support </li>
+</ul>
+
+<p>File name completion :</p>
+<p><img src="https://raw.githubusercontent.com/venkato/ideafilecompletion/master/screenshots/assist.png" /></p>
+
+<p>Open file in external tool :</p>
+<p><img src="https://raw.githubusercontent.com/venkato/ideafilecompletion/master/screenshots/open_in_external_tool.png" /></p>
+
+<p>Parent support :</p>
+<p><img src="https://raw.githubusercontent.com/venkato/ideafilecompletion/master/screenshots/parent_support.png"/></p>
+      </div>
+    ]]></description>
+
+
+  <change-notes><![CDATA[Added support for java lang
+    ]]>
+  </change-notes>
+
+  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="145"/>
+
+
+
+  <application-components>
+    <component>
+      <interface-class>net.sf.jremoterun.utilities.nonjdk.idea.init.Component1Interface</interface-class>
+      <implementation-class>net.sf.jremoterun.utilities.nonjdk.idea.init.Component1Impl</implementation-class>
+    </component>
+  </application-components>
+
+
+  <application-components>
+    <component>
+      <interface-class>idea.plugins.thirdparty.filecompletion.share.InitComponentI</interface-class>
+      <implementation-class>idea.plugins.thirdparty.filecompletion.share.InitComponentImpl</implementation-class>
+    </component>
+  </application-components>
+
+
+  <depends>org.intellij.intelliLang</depends>
+  <depends>org.intellij.groovy</depends>
+  <depends>com.intellij.uiDesigner</depends>
+
+
+
+  <actions>
+
+     <action class="idea.plugins.thirdparty.filecompletion.share.ReloadClassAction" id="idea.plugins.thirdparty.filecompletion.share.ReloadClassAction" text="ReloadClass" description="Reload class"  icon="/icons/reload.png">
+       <add-to-group group-id="RefactoringMenu" anchor="first"/>
+     </action>
+
+
+    <action class="idea.plugins.thirdparty.filecompletion.share.OpenFileInExternalToolAction" id="idea.plugins.thirdparty.filecompletion.share.OpenFileInExternalToolAction" text="Open file in external tool" description="Open file in external tool" icon="/icons/open_file.png">
+      <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+    </action>
+
+
+
+    <action class="idea.plugins.thirdparty.filecompletion.share.FileQuickInfoAction" id="idea.plugins.thirdparty.filecompletion.share.FileQuickInfoAction" text="Display file path" description="Display file path" icon="/icons/open_file.png">
+      <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+    </action>
+
+
+    <action class="idea.plugins.thirdparty.filecompletion.share.FindJarInMavenAction" id="idea.plugins.thirdparty.filecompletion.share.FindJarInMavenAction" text="Find jar in maven" description="Find jar in maven" icon="/icons/open_file.png">
+      <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+    </action>
+
+
+    <action class="idea.plugins.thirdparty.filecompletion.share.OpenMavenIdInExternalToolAction" id="idea.plugins.thirdparty.filecompletion.share.OpenMavenIdInExternalToolAction" text="Open maven id in browser" description="Open maven id in browser" icon="/icons/open_file.png">
+      <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+    </action>
+
+
+
+  <action class="idea.plugins.thirdparty.filecompletion.share.RemoteRunAction" id="idea.plugins.thirdparty.filecompletion.share.RemoteRunAction" text="Remote run" description="Remote run" icon="/icons/remote_run.png">
+    <add-to-group group-id="StructureViewPopupMenu" anchor="first"/>
+    <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+  </action>
+</actions>
+
+
+  <extensions defaultExtensionNs="com.intellij">
+    <completion.contributor language="Groovy" implementationClass="idea.plugins.thirdparty.filecompletion.share.MyGroovyCompletionContributor"/>
+    <completion.contributor language="JAVA" implementationClass="idea.plugins.thirdparty.filecompletion.share.MyJavaCompletionContributor"/>
+    <documentationProvider implementation="idea.plugins.thirdparty.filecompletion.jrr.a.MyDocumentationProviderImpl" />
+    <gotoDeclarationHandler implementation="idea.plugins.thirdparty.filecompletion.jrr.a.GotoDeclarationHandlerImpl" />
+
+  </extensions>
+
+</idea-plugin>
