@@ -21,6 +21,8 @@ class CloneGitRepo2 {
 
     public static String gitNative = "git"
 
+
+
     static void addAllFiles(File dir) {
         assert dir.exists()
         GeneralUtils.runNativeProcess("${gitNative} add -A", dir, true)

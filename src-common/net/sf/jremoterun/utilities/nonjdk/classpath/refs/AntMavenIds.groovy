@@ -21,7 +21,7 @@ enum AntMavenIds implements MavenIdContains {
 
     AntMavenIds() {
         String artifact =name().replace('_','-')
-        m = new MavenId("org.apache.ant", artifact, '1.10.3');
+        m = new MavenId("org.apache.ant", artifact, '1.10.5');
     }
 
 

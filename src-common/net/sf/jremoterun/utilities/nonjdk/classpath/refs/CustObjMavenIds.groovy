@@ -8,14 +8,17 @@ import net.sf.jremoterun.utilities.classpath.MavenIdContains
 enum CustObjMavenIds implements MavenIdContains {
 
     commnonsLang('commons-lang:commons-lang:2.6')
-    , git('org.eclipse.jgit:org.eclipse.jgit:5.0.1.201806211838-r')
+    , git('org.eclipse.jgit:org.eclipse.jgit:5.1.2.201810061102-r')
     //, git('org.eclipse.jgit:org.eclipse.jgit:4.5.4.201711221230-r')
-    , compressAbstraction('org.rauschig:jarchivelib:0.7.1')
+    , compressAbstraction('org.rauschig:jarchivelib:0.8.0')
     , zeroTurnaroundZipUtil('org.zeroturnaround:zt-zip:1.13')
-    , junrar1('com.github.junrar:junrar:2.0.0')
+    , junrar1('com.github.junrar:junrar:3.0.0')
     , slf4jApi('org.slf4j:slf4j-api:1.7.25')
     , slf4jJdkLogger('org.slf4j:slf4j-jdk14:1.7.25')
     , commonsLoggingMavenId('commons-logging:commons-logging:1.2')
+    // use eclipseJavaAstParser
+    , eclipseJavaCompiler('org.eclipse.jdt:ecj:3.15.0')
+    , eclipseJavaAstParser('org.eclipse.jdt:org.eclipse.jdt.core:3.15.0')
     /**
      * 2.5 supports jdk 6+.
      * 2.6 supports 7+.

@@ -1,7 +1,6 @@
 package net.sf.jremoterun.utilities.nonjdk.classpath.refs
 
 import groovy.transform.CompileStatic
-import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JeditermBinRefs
 import net.sf.jremoterun.utilities.nonjdk.git.GitBinaryAndSourceRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitSpec
@@ -10,13 +9,16 @@ import net.sf.jremoterun.utilities.nonjdk.git.GitSpec
 class GitReferences {
 
 
-    public static GitBinaryAndSourceRef jtermSsh = JeditermBinRefs.jtermSsh.ref
+//    public static GitBinaryAndSourceRef jtermSsh = JeditermBinRefs.jtermSsh.ref
 
-    public static GitBinaryAndSourceRef jtermPty = JeditermBinRefs.jtermPty.ref
+//    public static GitBinaryAndSourceRef jtermPty = JeditermBinRefs.jtermPty.ref
+    public static GitSpec jtermGitSpec = new GitSpec('https://github.com/JetBrains/jediterm')
 
-    public static GitRef jtermSrc = new GitRef('https://github.com/JetBrains/jediterm', 'terminal/src')
+//    public static GitRef jtermSrc = new GitRef('https://github.com/JetBrains/jediterm', 'terminal/src')
 
     public static GitRef pty4jLinuxLibs = new GitRef('https://github.com/traff/pty4j', 'os')
+    public static GitRef pty4jSrc = new GitRef('https://github.com/traff/pty4j', 'src')
+    public static GitRef purejavacommTraffSrc = new GitRef('https://github.com/traff/purejavacomm', 'src')
 
     public
     static GitBinaryAndSourceRef rsta = new GitBinaryAndSourceRef('https://github.com/venkato/RSTALanguageSupport', 'build/rsta.jar', 'src/main/java')

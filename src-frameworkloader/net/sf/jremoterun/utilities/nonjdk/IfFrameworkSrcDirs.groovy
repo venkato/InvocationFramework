@@ -3,6 +3,7 @@ package net.sf.jremoterun.utilities.nonjdk
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.classpath.ToFileRef2
 import net.sf.jremoterun.utilities.classpath.ToFileRefSelf
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
 
 @CompileStatic
 enum IfFrameworkSrcDirs implements ToFileRefSelf{
@@ -34,7 +35,8 @@ enum IfFrameworkSrcDirs implements ToFileRefSelf{
     @Override
     File resolveToFile() {
         if(InfocationFrameworkStructure.ifDir==null){
-            throw new NullPointerException("if dir is null")
+            InfocationFrameworkStructure.ifDir = GitReferences.ifFramework.resolveToFile()
+//            throw new NullPointerException("if dir is null")
         }
         return InfocationFrameworkStructure.ifDir.child(this.dirName)
     }

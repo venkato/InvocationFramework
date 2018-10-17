@@ -24,7 +24,7 @@ enum Log4j2MavenIds implements MavenIdContains {
 
     Log4j2MavenIds() {
         String artifactId = name().replace('_', '-')
-        m = new MavenId("org.apache.logging.log4j:log4j-${artifactId}:2.10.0");
+        m = new MavenId("org.apache.logging.log4j:log4j-${artifactId}:2.11.1");
     }
 
     public static List<? extends MavenIdContains> all = (List) values().toList()

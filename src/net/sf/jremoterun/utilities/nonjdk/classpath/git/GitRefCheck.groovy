@@ -1,7 +1,6 @@
 package net.sf.jremoterun.utilities.nonjdk.classpath.git;
 
 import net.sf.jremoterun.utilities.JrrClassUtils
-import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JeditermBinRefs
 import net.sf.jremoterun.utilities.nonjdk.git.GitRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitRefRef
 import org.junit.Test;

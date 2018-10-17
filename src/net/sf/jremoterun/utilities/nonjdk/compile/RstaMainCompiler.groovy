@@ -8,6 +8,7 @@ import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import net.sf.jremoterun.utilities.nonjdk.git.GitSpec
+import net.sf.jremoterun.utilities.nonjdk.javacompiler.EclipseJavaCompilerPure
 import org.apache.commons.io.FileUtils
 import org.junit.Test
 import org.zeroturnaround.zip.ZipUtil
@@ -15,11 +16,13 @@ import org.zeroturnaround.zip.ZipUtil
 import java.util.logging.Logger
 
 @CompileStatic
-class RstaMainCompiler  extends GenericCompiler {
+class RstaMainCompiler   {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     CustomObjectHandler handler = MavenDefaultSettings.mavenDefaultSettings.customObjectHandler
+
+    EclipseJavaCompilerPure compilerPure = new EclipseJavaCompilerPure();
 
     public static List mavenIds = [
             LatestMavenIds.rsyntaxtextarea,
@@ -33,9 +36,9 @@ class RstaMainCompiler  extends GenericCompiler {
 
 
     void prepare() {
-        params.javaVersion = '1.6'
-        client.adder.addGenericEnteries(mavenIds)
-        client.adder.addFileWhereClassLocated(JrrUtilities)
+        compilerPure.javaVersion = '1.6'
+        compilerPure.adder.addGenericEnteries(mavenIds)
+        compilerPure.adder.addFileWhereClassLocated(JrrUtilities)
 
     }
 
@@ -45,26 +48,22 @@ class RstaMainCompiler  extends GenericCompiler {
         if(repoBase==null) {
             repoBase = handler.resolveToFile(new GitSpec(  GitReferences.rsta.repo))
         }
-        params.addInDir new File(repoBase,'src/main/java')
-        client.adder.add GitReferences.rstaAutoCompetion
-        params.outputDir = new File(repoBase,'bin')
-        params.outputDir.mkdirs()
-    }
-
-    void compile() {
-        client.compile(params)
+        compilerPure.addInDir new File(repoBase,'src/main/java')
+        compilerPure.adder.add GitReferences.rstaAutoCompetion
+        compilerPure.outputDir = new File(repoBase,'bin')
+        compilerPure.outputDir.mkdirs()
     }
 
     File dist;
 
     File zip() {
-        FileUtils.copyDirectory(new File(repoBase,'src/main/resources'),params.outputDir)
+        FileUtils.copyDirectory(new File(repoBase,'src/main/resources'),compilerPure.outputDir)
         dist = new File(repoBase,'build/rsta.jar');
         dist.parentFile.mkdir()
         assert dist.parentFile.exists()
         dist.delete()
         assert !dist.exists()
-        ZipUtil.pack(params.outputDir,dist)
+        ZipUtil.pack(compilerPure.outputDir,dist)
         return dist
     }
 
@@ -73,7 +72,7 @@ class RstaMainCompiler  extends GenericCompiler {
     void all() {
         prepare()
         addDefaulSrc()
-        compile()
+        compilerPure.compile()
         zip()
     }
 

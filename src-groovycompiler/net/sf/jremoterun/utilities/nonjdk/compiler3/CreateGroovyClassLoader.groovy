@@ -28,7 +28,7 @@ class CreateGroovyClassLoader {
 
 
     static URLClassLoader findExtClassLoader() {
-        ClassLoader loader = JrrClassUtils.currentClassLoader
+        ClassLoader loader = JrrClassUtils.getCurrentClassLoader()
         URLClassLoader classLoader = findExtClassLoaderImpl(loader)
         if (classLoader == null) {
             throw new Exception("failed find ext classloader for ${loader}")

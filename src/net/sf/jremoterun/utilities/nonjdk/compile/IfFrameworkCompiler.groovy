@@ -64,6 +64,7 @@ class IfFrameworkCompiler extends GenericCompiler {
         client.adder.addAll NexusSearchMavenIds.all
         client.adder.addAll LatestMavenIds.usefulMavenIdSafeToUseLatest
         // client.adder.add GroovyMavenIds.groovyCore
+        client.adder.add JeditTermCompilerConsoleCompiler.compileIfNeededS()
         CutomJarAdd.addCustom(client.adder)
 
         List<String> dirs = InfocationFrameworkStructure.dirs2

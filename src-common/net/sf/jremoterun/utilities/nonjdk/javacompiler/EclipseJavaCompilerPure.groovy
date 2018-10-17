@@ -39,8 +39,23 @@ public class EclipseJavaCompilerPure {
         }
     }
 
-    public void compile() {
+    void checkOutDir(){
+
+        assert outputDir!=null
+        outputDir.mkdir()
+        assert outputDir.exists()
+        outputDir.deleteDir()
+        outputDir.mkdir()
+        if (!outputDir.exists()) {
+            throw new FileNotFoundException("failed create ${outputDir}")
+        }
+
+        assert outputDir.listFiles().length == 0
+    }
+
+    void compile() {
         assert javaVersion!=null
+        checkOutDir()
         String[] javacParameters = makeParameters();
         StringWriter javacOutput = new StringWriter();
         PrintWriter writer = new PrintWriter(javacOutput);

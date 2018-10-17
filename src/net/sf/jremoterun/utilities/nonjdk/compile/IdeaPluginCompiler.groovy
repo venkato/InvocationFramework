@@ -40,6 +40,10 @@ class IdeaPluginCompiler extends IfFrameworkCompiler {
     }
 
 
+    static void addIdeaCp(AddFilesToClassLoaderCommon adder,File ideaDir2){
+        adder.addAllJarsInDir new File(ideaDir2, "lib/")
+        adder.addAllJarsInDir new File(ideaDir2, 'plugins/Groovy/lib/');
+    }
 
 
     void prepare2(File ideaDir) {

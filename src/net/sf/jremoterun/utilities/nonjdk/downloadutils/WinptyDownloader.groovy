@@ -43,8 +43,12 @@ class WinptyDownloader {
         File checkFIle = new File(toDir, 'winpty.dll')
         assert checkFIle.exists()
         log.info "checkFIle : ${checkFIle}"
-        JrrClassUtils.setFieldValue(PtyUtil, 'PTY_LIB_FOLDER', unzip.absolutePath)
+        setPtyLibFolder(unzip)
         return unzip
+    }
+
+    static void setPtyLibFolder(File unzip){
+        JrrClassUtils.setFieldValue(PtyUtil, 'PTY_LIB_FOLDER', unzip.absolutePath)
     }
 
     static void copyLinuxNativeLibs(File toDir){

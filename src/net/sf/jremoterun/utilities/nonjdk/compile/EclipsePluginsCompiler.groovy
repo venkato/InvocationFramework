@@ -38,7 +38,7 @@ class EclipsePluginsCompiler extends GenericCompiler {
     }
 
     void prepare() {
-        if(baseDir==null){
+        if (baseDir == null) {
             baseDir = client.ifDir
         }
         params.printWarning = false
@@ -50,19 +50,17 @@ class EclipsePluginsCompiler extends GenericCompiler {
         client.adder.addFileWhereClassLocated(JavaVMClient)
         client.adder.addAll DropshipClasspath.allLibsWithGroovy
         client.adder.addAll mavenIds
+        client.adder.add JeditTermCompilerConsoleCompiler.compileIfNeededS()
         CutomJarAdd.addCustom(client.adder)
 
-        params.addInDir new File(baseDir, IfFrameworkSrcDirs.src_common.dirName)
-        params.addInDir new File(baseDir, IfFrameworkSrcDirs.src_eclipse_starter.dirName)
-        params.addInDir new File(baseDir, IfFrameworkSrcDirs.src_eclipse_showcmd.dirName)
-        params.addInDir GitReferences.eclipseFileCompiltion.resolveToFile()
+        addInDir IfFrameworkSrcDirs.src_common
+        addInDir IfFrameworkSrcDirs.src_eclipse_starter
+        addInDir IfFrameworkSrcDirs.src_eclipse_showcmd
+        addInDir GitReferences.eclipseFileCompiltion
 
         params.addTestClassLoaded(JrrClassUtils)
         params.addTestClassLoaded(JdkLogFormatter)
     }
-
-
-
 
 
 }

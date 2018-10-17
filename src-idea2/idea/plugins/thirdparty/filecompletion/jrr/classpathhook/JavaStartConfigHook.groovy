@@ -57,8 +57,8 @@ class JavaStartConfigHook extends InjectedCode {
             ${CodeInjector.createSharedObjectsHookVar2(clazz)}
             ${CodeInjector.myHookVar}.get(this);
         """
-        JrrJavassistUtils.redefineClass(ctClass, clazz);
         CodeInjector.putInector2(clazz, new JavaStartConfigHook());
+        JrrJavassistUtils.redefineClass(ctClass, clazz);
     }
 
     void getImpl2(Object o) {

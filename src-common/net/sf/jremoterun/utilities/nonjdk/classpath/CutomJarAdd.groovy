@@ -3,7 +3,6 @@ package net.sf.jremoterun.utilities.nonjdk.classpath;
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.AddFilesToClassLoaderCommon
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
-import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JeditermBinRefs
 import net.sf.jremoterun.utilities.nonjdk.git.GitRef;
 
 import java.util.logging.Logger;
@@ -24,7 +23,7 @@ class CutomJarAdd {
 
     static void addCustom(AddFilesToClassLoaderCommon adder) {
         adder.addAll gitRefs
-        adder.addAll JeditermBinRefs.all
+//        adder.addAll JeditermBinRefs.all
     }
 
 }

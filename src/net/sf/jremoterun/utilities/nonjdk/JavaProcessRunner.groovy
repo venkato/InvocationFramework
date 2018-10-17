@@ -6,6 +6,7 @@ import net.sf.jremoterun.utilities.classpath.ClRef
 import net.sf.jremoterun.utilities.groovystarter.runners.ClRefRef
 import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.AddFileToClassloaderDummy
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
+import org.apache.commons.lang3.SystemUtils
 
 import java.util.logging.Logger
 
@@ -35,8 +36,16 @@ class JavaProcessRunner {
     AddFileToClassloaderDummy javaClasspath = new AddFileToClassloaderDummy();
 
     JavaProcessRunner() {
+        init()
+    }
+
+    void init(){
         javaClasspath.isLogFileAlreadyAdded = false
-        javaClasspath.addAll javaClasspathDefault
+        if(javaClasspathDefault.size()>0) {
+            javaClasspath.addAll javaClasspathDefault
+        }
+        File javaExec = org.apache.commons.lang3.SystemUtils.getJavaHome().child('bin/java')
+        javaBinaryDefault = javaExec.absolutePath
     }
 
     void buildCmd() {
@@ -54,6 +63,15 @@ class JavaProcessRunner {
     }
 
     void setJrrRunner2(int type) {
+        if(SystemUtils.IS_OS_WINDOWS){
+            if(type in [2,3]){
+
+            }else{
+                throw new IllegalStateException("Invalid type : ${type}, allowed : 2 or 3")
+            }
+        }else{
+            type = 2
+        }
         File jrrStarterLibsDir = GitReferences.groovyClasspathDir.resolveToFile()
         setJrrRunner(type, jrrStarterLibsDir)
     }
@@ -83,7 +101,7 @@ class JavaProcessRunner {
     }
 
     void consomeOutAndWait() {
-        process.consumeProcessOutput()
+        process.consumeProcessOutput(System.out,System.err)
         exitCode = process.waitFor()
     }
 

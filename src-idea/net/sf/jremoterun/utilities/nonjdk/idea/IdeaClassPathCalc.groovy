@@ -6,6 +6,7 @@ import net.sf.jremoterun.utilities.classpath.BinaryWithSource
 import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.nonjdk.classpath.filter.ClassPathFilter
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JeditermBinRefs
 import net.sf.jremoterun.utilities.nonjdk.git.GitBinaryAndSourceRef
 
 import java.util.logging.Logger
@@ -26,9 +27,9 @@ class IdeaClassPathCalc extends ClassPathFilter {
 
     @Override
     Object onGitBinaryAndSourceRef(GitBinaryAndSourceRef gitRef) {
-        if(gitRef == GitReferences.jtermPty){
-            return null
-        }
+//        if(gitRef == JeditermBinRefs.jtermPty.ref){
+//            return null
+//        }
         return super.onGitBinaryAndSourceRef(gitRef)
     }
 

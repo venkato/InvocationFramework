@@ -56,10 +56,13 @@ ${classPath}
         return out.toByteArray()
     }
 
-
+    /**
+     * return without tail
+     */
     static List<File> getClassLocationAll2(final Class clazz) {
         final String tail = clazz.getName().replace('.', '/') + ".class";
-        return getClassLocationAll(clazz.getName(), clazz.getClassLoader()).collect {
+        List<URL> urls = getClassLocationAll(clazz.getName(), clazz.getClassLoader())
+        List<File> files = urls.collect {
             String asString = it.toString();
             asString = asString.substring(0, asString.length() - tail.length());
             if (asString.startsWith("jar:")) {
@@ -69,9 +72,12 @@ ${classPath}
             URL url = new URL(asString)
             return UrlToFileConverter.c.convert(url)
         }
+        return files
     }
 
-
+    /**
+     * return without tail
+     */
     static File getClassLocationFirst(final Class clazz) {
         List<File> all = getClassLocationAll2(clazz);
         if (all.size() == 0) {
@@ -113,7 +119,9 @@ ${classPath}
 
     }
 
-
+    /**
+     * return without tail
+     */
     static File convertClassLocationToPathToJar(URL urlRes, final String tail) {
         if (urlRes == null) {
             throw new NullPointerException("class location is null for ${tail}")
@@ -128,7 +136,9 @@ ${classPath}
         return file3
     }
 
-
+    /**
+     * Return locations with tail
+     */
     static List<URL> getClassLocationAll(final String className, ClassLoader classLoader)
             throws MalformedURLException {
         final String tail = UrlCLassLoaderUtils.buildClassNameSuffix(className);

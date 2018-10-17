@@ -23,9 +23,16 @@ import org.apache.log4j.Logger
 class JavaClassPathHook extends InjectedCode {
     private static final Logger log = LogManager.getLogger(JrrClassUtils.currentClass);
 
+    public static boolean inited = false
+
     static void installBothHooks() {
-        JavaClassPathHook.installHook()
-        JavaStartConfigHook.installHook()
+        if(inited){
+            log.info "already inited"
+        }else {
+            inited = true
+            JavaClassPathHook.installHook()
+            JavaStartConfigHook.installHook()
+        }
     }
 
     @Override

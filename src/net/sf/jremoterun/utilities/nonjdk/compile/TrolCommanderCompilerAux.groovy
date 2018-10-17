@@ -9,7 +9,6 @@ import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.CustObjMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.Log4j2MavenIds
-import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JeditermBinRefs
 import net.sf.jremoterun.utilities.nonjdk.git.GitBinaryAndSourceRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitSpec
 
@@ -100,7 +99,7 @@ class TrolCommanderCompilerAux {
     ]
 
 
-    public static List mavenIds = mavenIds1 + mavenIds2 + JeditermBinRefs.all
+    public static List mavenIds = mavenIds1 + mavenIds2
 
     static void addRuntimeResources(File baseDir, AddFilesToClassLoaderGroovy b) {
         b.add new File(baseDir, 'res/runtime')
@@ -117,6 +116,7 @@ class TrolCommanderCompilerAux {
 
         b.addAll Log4j2MavenIds.all
         b.addAll TrolCommanderCompilerAux.mavenIds
+        b.add new JeditTermCompilerConsoleCompiler().compileIfNeeded()
         addCompileAndRuntime(baseDir, b)
         addRuntimeResources(baseDir, b)
         b.add trolBinAndSrc2

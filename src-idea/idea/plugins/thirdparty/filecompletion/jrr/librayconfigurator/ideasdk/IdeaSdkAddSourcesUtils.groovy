@@ -19,11 +19,11 @@ class IdeaSdkAddSourcesUtils {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
-    public static List<GitRef> sourcesJterm = [
-            GitReferences.jtermSrc,
-            GitReferences.jtermPty.refToSourceOnly,
-            GitReferences.jtermSsh.refToSourceOnly,
-    ]
+//    public static List<GitRef> sourcesJterm = [
+//            GitReferences.jtermSrc,
+//            GitReferences.jtermPty.refToSourceOnly,
+//            GitReferences.jtermSsh.refToSourceOnly,
+//    ]
 
 
     static ProjectJdkImpl findIdeaSdk() {

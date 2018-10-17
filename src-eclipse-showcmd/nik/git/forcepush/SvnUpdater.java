@@ -8,6 +8,7 @@ import org.tigris.subversion.subclipse.ui.operations.UpdateOperation;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 import net.sf.jremoterun.utilities.JrrClassUtils;
+import net.sf.jremoterun.utilities.nonjdk.eclipse.svn.SvnUpdater2;
 
 
 public class SvnUpdater {
@@ -18,15 +19,8 @@ public class SvnUpdater {
 	// here project can be used as resource
 	public static void updateSvn2(IResource resource) throws Exception {
 		log.info("about to update for "+resource);
-		UpdateOperation updateOperation = new UpdateOperation(null, resource, SVNRevision.HEAD);
-		updateOperation.setDepth(0);
-		updateOperation.setSetDepth(true);
-		updateOperation.setForce(false);
-		updateOperation.setIgnoreExternals(true);
-		updateOperation.setCanRunAsJob(true);
-//		updateOperation.run(new SysOutProgressMonitor());
-		log.info("starting update for "+resource);
-		updateOperation.run();
+		SvnUpdater2 updater2 = new SvnUpdater2(resource);
+		updater2.updateSvn2();
 		log.info("updated started for "+resource);
 	}
 	

@@ -36,7 +36,6 @@ class StdClassPathTester extends ClassPathTesterHelper {
 
 
 
-        ClassPathTesterHelper.checkClassOnce(com.google.common.net.HostAndPort, LatestMavenIds.guavaMavenId)
 //        checkClassOnce(com.jidesoft.swing.Gripper, new MavenId("com.jidesoft:jide-oss:3.6.18"))
 
         checkClassOnce(Native, LatestMavenIds.jna)
@@ -61,7 +60,8 @@ class StdClassPathTester extends ClassPathTesterHelper {
         checkFieldExists(Level, 'TRACE')
 
         // getHostText used in jedit ssh
-        com.google.common.net.HostAndPort.fromString('127.0.0.1:5223').getHostText();
+//        ClassPathTesterHelper.checkClassOnce(com.google.common.net.HostAndPort, LatestMavenIds.guavaMavenId)
+//        com.google.common.net.HostAndPort.fromString('127.0.0.1:5223').getHostText();
 
         URL jdkLoggerExtentionMethods = JrrClassUtils.currentClassLoader.getResource("META-INF/services/org.codehaus.groovy.runtime.ExtensionModule")
         assert jdkLoggerExtentionMethods != null

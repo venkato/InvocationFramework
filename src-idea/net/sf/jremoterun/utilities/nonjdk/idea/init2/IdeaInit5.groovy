@@ -18,7 +18,7 @@ class IdeaInit5 extends InjectedCode {
 
     static ClRef init6 = new ClRef('net.sf.jremoterun.utilities.nonjdk.idea.init2.IdeaInit6')
 
-    static ClRef init1 = new ClRef('net.sf.jremoterun.utilities.nonjdk.idea.init2.IdeaInit4')
+    static ClRef init4 = new ClRef('net.sf.jremoterun.utilities.nonjdk.idea.init2.IdeaInit4')
 
 
     @Override
@@ -41,7 +41,7 @@ class IdeaInit5 extends InjectedCode {
         ClassPathInit3.addGitRefSupport(IdeaClasspathAdd.addCl,gitBaseDir)
         DefaultClasspathAdder.addRefs(IdeaClasspathAdd.addCl)
         RunnableFactory.runRunner init6
-        RunnableFactory.runRunner init1
+        RunnableFactory.runRunner init4
     }
 
 

@@ -119,10 +119,11 @@ class CompileRequestClient implements CompilerRequest {
         if (!params.outputDir.exists()) {
             throw new FileNotFoundException("failed create ${params.outputDir}")
         }
+        assert params.outputDir.listFiles().length == 0
         if (!params.printWarning) {
             params.additionalFlags.add('-nowarn')
         }
-        assert params.outputDir.listFiles().length == 0
+
         if (params.eclipseCompiler && params.javaVersion == null) {
             throw new IllegalArgumentException('specify javaVersion')
         }

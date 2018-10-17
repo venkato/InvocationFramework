@@ -3,6 +3,7 @@ package net.sf.jremoterun.utilities.nonjdk.classpath.tester
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.JrrUtils
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.UrlCLassLoaderUtils
 import net.sf.jremoterun.utilities.classpath.ClRef
 import net.sf.jremoterun.utilities.classpath.MavenCommonUtils
@@ -64,7 +65,7 @@ public abstract class ClassPathTesterHelper implements Runnable {
             Class<?> clazz = classLoader.loadClass(className.className);
             checkTheSameClassLoader(clazz, classLoader)
             File location = UrlCLassLoaderUtils.getClassLocation(clazz);
-            throw new Exception( "${className.className} is present : ${location}" );
+            throw new Exception("${className.className} is present : ${location}");
         } catch (ClassNotFoundException e) {
 
         }
@@ -79,13 +80,47 @@ public abstract class ClassPathTesterHelper implements Runnable {
         }
     }
 
-    static void checkClassOnce(Class clazz, MavenIdContains  mavenId) {
+
+    static void checkClassOnce(Class clazz, MavenIdContains mavenId) {
         checkClassOnce(clazz, mavenCommonUtils.findMavenOrGradle(mavenId.getM()))
     }
 
     static void checkClassOnce(Class clazz) {
         List<File> files = UrlCLassLoaderUtils2.getClassLocationAll2(clazz);
-        assert files.size()==1
+        assert files.size() == 1
+    }
+
+    static void checkClassNotFromPathNoEx(Class clazz, File notPath) {
+        try {
+            checkClassNotFromPath(clazz, notPath)
+        } catch (UndesiredClassLocationException e) {
+            JrrUtilities.showException(e.getMessage(), e)
+        }
+    }
+
+    static void checkClassNotFromPath(Class clazz, File notPath) {
+        assert notPath.exists()
+        List<File> files = UrlCLassLoaderUtils2.getClassLocationAll2(clazz);
+        switch (files.size()) {
+            case 0:
+                throw new Exception("class was not found : ${clazz.name}")
+            case 1:
+                File actualFile = files[0]
+                if (actualFile == null) {
+                    throw new Exception("actual file is null for ${clazz}")
+                }
+                actualFile = actualFile.canonicalFile.absoluteFile
+                String actualPathS = actualFile.absolutePath;
+                String notPathS = notPath.absolutePath
+                if (actualPathS == notPathS) {
+                    throw new UndesiredClassLocationException("Class ${clazz.getName()} from undesired path : ${notPath}")
+                }
+                break;
+            default:
+                files = files.collect { it.canonicalFile }
+                throw new Exception("found many path ${files.size()} : ${files.join(' , ')}")
+        }
+
     }
 
     static void checkClassOnce(Class clazz, File expectedFile) {

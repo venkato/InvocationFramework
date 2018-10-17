@@ -28,13 +28,19 @@ class CustomRunners {
     static OSIntegrationIdea osInegrationClient;
 
 
-    static File runnersDir = "c:\\progi\\idea\\runner\\cusomhandlres\\" as File
+    static File runnersDir
 
     static JrrGroovyScriptRunner jrrGroovyScriptRunner = new JrrGroovyScriptRunner();
 
-//    static GroovyClassLoader groovyClassLoader = new GroovyClassLoader(CustomRunners.classLoader)
 
-    static void createCustomRunners2(OSIntegrationIdea osInegrationClient2) {
+
+    static void createCustomRunners3(File runnersDir2 ) {
+        createCustomRunners2(OSIntegrationIdea.osIntegrationIdea,runnersDir2)
+    }
+
+    static void createCustomRunners2(OSIntegrationIdea osInegrationClient2,File runnersDir2 ) {
+        assert runnersDir2.exists()
+        runnersDir = runnersDir2
         assert osInegrationClient2!=null
         osInegrationClient = osInegrationClient2
         jrrGroovyScriptRunner.initDigest()
@@ -91,7 +97,7 @@ class CustomRunners {
     }
 
 
-    static JPanel createCustomRunners() {
+    private static JPanel createCustomRunners() {
         JPanel panel = JrrIdeaBeanCommon.bean.customRunners
         if (panel != null) {
             return panel

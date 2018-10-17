@@ -43,7 +43,7 @@ class ClassPathInit3  extends InjectedCode{
         if (adder == null) {
             throw new IllegalArgumentException("adder is null")
         }
-        File gitDir = list[2] as File
+        File gitDir = list[1] as File
         if (gitDir == null) {
             throw new IllegalArgumentException("Git dir is null")
         }
