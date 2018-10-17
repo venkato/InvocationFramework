@@ -63,7 +63,6 @@ class TrolCommanderCompilerAux {
             , LatestMavenIds.xercesImpl
             , LatestMavenIds.xmlApisExt
             , LatestMavenIds.guavaMavenId
-            , LatestMavenIds.pureJavaComm
             , LatestMavenIds.icu4j
             , LatestMavenIds.jetbrainsAnnotations
             , LatestMavenIds.webDavClient

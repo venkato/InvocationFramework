@@ -1,16 +1,10 @@
 package net.sf.jremoterun.utilities.nonjdk.compile
 
 import groovy.transform.CompileStatic
-import net.sf.jremoterun.utilities.JavaVMClient
 import net.sf.jremoterun.utilities.JrrClassUtils
-import net.sf.jremoterun.utilities.classpath.MavenId
-import net.sf.jremoterun.utilities.groovystarter.st.JdkLogFormatter
-import net.sf.jremoterun.utilities.mdep.DropshipClasspath
-import net.sf.jremoterun.utilities.nonjdk.InfocationFrameworkStructure
-import net.sf.jremoterun.utilities.nonjdk.classpath.CutomJarAdd
-import net.sf.jremoterun.utilities.nonjdk.classpath.refs.*
-import net.sf.jremoterun.utilities.nonjdk.classpath.refs2.CutomJarAdd1
-import net.sf.jremoterun.utilities.nonjdk.git.GitRef
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JeditermBinRefs2
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import net.sf.jremoterun.utilities.nonjdk.javacompiler.EclipseJavaCompilerPure
 import org.zeroturnaround.zip.ZipUtil
 
@@ -69,11 +63,13 @@ class JeditTermCompilerConsoleCompiler  {
 
     File compileIfNeeded(){
         detectBuildDir()
-        File zipFile = buildDir.child('jediterm.jar')
+        File zipFile = buildDir.child('jediterm.jar ..')
         if(!zipFile.exists()){
+            log.info "compiling JeditTerm"
             prepare()
             compilerPure.compile()
             zipp()
+            log.info "JeditTerm compiled"
         }
         assert zipFile.exists()
         return zipFile

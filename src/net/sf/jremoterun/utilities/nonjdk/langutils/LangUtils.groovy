@@ -15,12 +15,15 @@ class LangUtils {
 
     String[] getLibPathUser(){
         String[] res = JrrClassUtils.getFieldValue(ClassLoader,'usr_paths') as String[];
+        if(res==null){
+            log.info "lib not loaded"
+        }
         return res
     }
 
     void setLibToUserPathUnsafe(List<String> path2){
         String[] array = path2.toArray(new String[0])
-        JrrClassUtils.setFieldValue(ClassLoader,'sys_paths',array)
+        JrrClassUtils.setFieldValue(ClassLoader,'usr_paths',array)
     }
 
     void addLibToUserPath(File path2){
@@ -28,9 +31,7 @@ class LangUtils {
         List<String> list = getLibPathUser().toList()
         list.add(path2.absolutePath)
         setLibToUserPathUnsafe(list)
-
     }
-
 
     void insertLibToUserPath(File path2){
         assert path2.isDirectory()

@@ -5,7 +5,9 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.groovystarter.GroovyMethodRunnerParams
 import net.sf.jremoterun.utilities.mdep.DropshipClasspath
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
+import org.apache.commons.io.FileUtils
 import org.zeroturnaround.zip.ZipUtil
 
 import java.util.logging.Logger
@@ -39,7 +41,12 @@ class JrrUtilsCompiler extends GenericCompiler {
 
     void addDefaulSrc() {
         if(baseDir==null){
-            baseDir= GroovyMethodRunnerParams.gmrp.grHome
+            File testFile=new File(GroovyMethodRunnerParams.gmrp.grHome, 'JrrUtilities/src')
+            if(testFile.exists()) {
+                baseDir = GroovyMethodRunnerParams.gmrp.grHome
+            }else {
+                baseDir = GitReferences.starter.resolveToFile()
+            }
         }
         addInDir new File(baseDir, 'JrrUtilities/src')
         addInDir new File(baseDir, 'JrrStarter/src')
@@ -50,11 +57,13 @@ class JrrUtilsCompiler extends GenericCompiler {
 
 
     File zipp() {
+        File tmpJar = new File(baseDir, 'JrrUtilities/build/jrrutilities.jar')
+        ZipUtil.pack(params.outputDir, tmpJar)
         File destJar = new File(baseDir, 'onejar/jrrutilities.jar')
         if(!destJar.parentFile.exists()){
             assert destJar.parentFile.mkdir()
         }
-        ZipUtil.pack(params.outputDir, destJar)
+        FileUtils.copyFile(tmpJar,destJar)
         return destJar
     }
 

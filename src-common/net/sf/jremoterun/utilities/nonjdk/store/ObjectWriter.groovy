@@ -90,13 +90,25 @@ class ObjectWriter {
             case { obj instanceof Short }:
             case { obj instanceof Byte }:
                 return "${obj} as ${obj.class.simpleName}"
-            default:
-                obj.class.getConstructor(String)
+            case { obj instanceof OneNestedField }:
+                OneNestedField oneNestedField = obj as OneNestedField
+                Object nestedField = oneNestedField.getNestedField()
                 writer3.addImport(obj.class)
-                String asStr = writeObject(writer3, obj.toString());
-                return " new ${obj.class.simpleName} ( ${asStr} )"
-                throw new UnsupportedOperationException("${obj.class.name} ${obj}")
+                String asStr = writeObject(writer3, nestedField);
+                return "new  ${obj.class.simpleName} ( ${asStr} )"
+            case { obj instanceof JavaBean2 }:
+                JavaBean2 bean2 = obj as JavaBean2;
+                return JavaBeanStore2.save(bean2, writer3, this, false);
+            default:
+                return writeUnknownObject(writer3, obj)
         }
+    }
+
+    String writeUnknownObject(Writer3 writer3, Object obj) {
+        obj.class.getConstructor(String)
+        writer3.addImport(obj.class)
+        String asStr = writeObject(writer3, obj.toString());
+        return " new ${obj.class.simpleName} ( ${asStr} )"
     }
 
     String writeList(Writer3 writer3, List list) {

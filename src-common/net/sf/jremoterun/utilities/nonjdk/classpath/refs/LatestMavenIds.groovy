@@ -159,7 +159,7 @@ enum LatestMavenIds implements MavenIdContains {
 
 
     public
-    static List<? extends MavenIdContains> specific = [CustObjMavenIds.git, junit, CustObjMavenIds.slf4jApi, jnrJffi, portForward, jna, jnaPlatform, gnuGetOpt, jodaTime, rstaui, eclipseJavaCompiler, eclipseJavaAstParser,rsyntaxtextarea, jfreeCommon, jfreeChart, CustObjMavenIds.commnonsLang, commonsCollection, commnonsLang3, commonsCodec, groovySshShell, javaCompiler1, icePdfCore, icePdfViewer, j2sshMaverick, commonsNet, commonsCollection4, jansi, jsoup, jcraft, httpClient, httpCore, jideOss, jmdns, jcifs, mx4j, trileadSsh, cssParser, commonsHttpOld, pureJavaComm, cssParser3, asmOw2All, compressAbstraction, commonsCompress, jasperreports, quartz, winKillProcessTree, svnKit, fernflowerJavaDecompiler, fernflowerLogger, fontChooser, opencsv,]
+    static List<? extends MavenIdContains> specific = [CustObjMavenIds.git, junit, CustObjMavenIds.slf4jApi, jnrJffi, portForward, jna, jnaPlatform, gnuGetOpt, jodaTime, rstaui, eclipseJavaCompiler, eclipseJavaAstParser,rsyntaxtextarea, jfreeCommon, jfreeChart, CustObjMavenIds.commnonsLang, commonsCollection, commnonsLang3, commonsCodec, groovySshShell, javaCompiler1, icePdfCore, icePdfViewer, j2sshMaverick, commonsNet, commonsCollection4, jansi, jsoup, jcraft, httpClient, httpCore, jideOss, jmdns, jcifs, mx4j, trileadSsh, cssParser, commonsHttpOld, cssParser3, asmOw2All, compressAbstraction, commonsCompress, jasperreports, quartz, winKillProcessTree, svnKit, fernflowerJavaDecompiler, fernflowerLogger, fontChooser, opencsv,]
 
 
     public

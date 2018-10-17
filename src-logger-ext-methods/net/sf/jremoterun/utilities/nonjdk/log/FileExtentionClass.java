@@ -32,5 +32,21 @@ public class FileExtentionClass {
 
     }
 
+    public static String getPathToParent(File parent, File child) {
+        if(!isChildFile(parent,child)){
+            throw new IllegalArgumentException("child = "+child+" has incorrect parent : "+parent);
+        }
+        String parentPath = parent.getAbsolutePath().replace('\\', '/');
+        String childPath = child.getAbsolutePath().replace('\\', '/');
+        assert childPath.length() >= parentPath.length();
+        String res = childPath.substring(parentPath.length());
+        if (res.startsWith("/")) {
+            return res.substring(1);
+        }
+        return res;
+    }
+
+
+
 
 }
