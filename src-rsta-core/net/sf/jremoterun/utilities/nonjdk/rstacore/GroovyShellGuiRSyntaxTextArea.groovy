@@ -31,21 +31,17 @@ public abstract class GroovyShellGuiRSyntaxTextArea {
 
     private ArrayList<JMenuItem> menuItems = new ArrayList<JMenuItem>();
 
-    private long editsTry = 0;
-
-    final RSyntaxTextAreaCodeAssist  textArea;
-
-    final RTextScrollPane scrollPane;
+    final RSyntaxTextAreaCodeAssistUndoFix  textArea;
 
     public GroovyShellGuiRSyntaxTextArea() {
         textArea = createTextArea();
-        scrollPane = new RTextScrollPane(textArea, true);
+        textArea.scrollPane = new RTextScrollPane(textArea, true);
         setEditable(true);
         textArea.setTabSize(2);
-        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setIconRowHeaderEnabled(true);
-        scrollPane.addFocusListener(new FocusAdapter() {
+        textArea.scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        textArea.scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        textArea.scrollPane.setIconRowHeaderEnabled(true);
+        textArea.scrollPane.addFocusListener(new FocusAdapter() {
 
             @Override
             public void focusGained(final FocusEvent e) {
@@ -56,8 +52,8 @@ public abstract class GroovyShellGuiRSyntaxTextArea {
         textArea.setCodeFoldingEnabled(true);
     }
 
-    protected RSyntaxTextAreaCodeAssist createTextArea() {
-        return new RSyntaxTextAreaCodeAssistWithCustMenu() {
+    protected RSyntaxTextAreaCodeAssistUndoFix createTextArea() {
+        return new RSyntaxTextAreaCodeAssistUndoFix() {
             @Override
             void appendFoldingMenu2(JPopupMenu popupMenu) {
                 appendFoldingMenu3(popupMenu);
@@ -65,35 +61,26 @@ public abstract class GroovyShellGuiRSyntaxTextArea {
         };
     }
 
-    void appendFoldingMenu3(JPopupMenu popupMenu){
+    protected void appendFoldingMenu3(JPopupMenu popupMenu){
         for (JMenuItem menuItem : menuItems) {
             popupMenu.add(menuItem);
         }
 
     }
 
+    void addLangSupport(){
+        textArea.addLangSupport()
+    }
+
+    @Deprecated
     public void setText(String text) {
         textArea.setText(text);
-        textArea.setHyperlinksEnabled(true);
-        scrollPane.setLineNumbersEnabled(true);
-        textArea.setHighlightCurrentLine(false);
-
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        textArea.select(0, 0);
-        if (!isEditable()) {
-            editsTry++;
-            if (editsTry > 5) {
-                // discarding for avoiding memory leak
-                textArea.discardAllEdits();
-                editsTry = 0;
-            }
-        }
     }
+
 
 //    abstract String getScriptText() throws IOException
 
-    public boolean requestFocusInWindow() {
+     boolean requestFocusInWindow() {
         return textArea.requestFocusInWindow();
 
     }
@@ -102,10 +89,9 @@ public abstract class GroovyShellGuiRSyntaxTextArea {
         textArea.requestFocus();
     }
 
+    @Deprecated
     public String getText() {
-        String text = textArea.getText();
-        text = text.replace("\r\n", "\n").replace("\r", "\n");
-        return text;
+        return textArea.getTextNormalized();
     }
 
     public String getSelectedText() {
@@ -113,45 +99,28 @@ public abstract class GroovyShellGuiRSyntaxTextArea {
         if (selectedText == null) {
             return null;
         }
-        selectedText = selectedText.replace("\r\n", "\n").replace("\r", "\n");
+        selectedText = RSyntaxTextAreaCodeAssistUndoFix.nornalizeText(selectedText);
         return selectedText;
     }
 
-    public void addLangSupport() throws Exception {
-        RstaLangSupportStatic langSupport = RstaLangSupportStatic.langSupport;
-        langSupport.init();
-//        RSyntaxTextArea textArea = this.getTextArea();
-        JavaLanguageSupport groovyLanguageSupport;
-        groovyLanguageSupport = (JavaLanguageSupport) LanguageSupportFactory.get()
-                .getSupportFor(SyntaxConstants.SYNTAX_STYLE_JAVA);
-        groovyLanguageSupport.setJarManager langSupport.addFileSourceToRsta.jarManager
-        textArea.groovyLanguageSupport = groovyLanguageSupport
-        groovyLanguageSupport.install(textArea);
 
-//        JrrClassUtils.setFieldValue(langSupport.groovyLanguageSupport, "jarManager",
-//                langSupport.addFileSourceToRsta.jarManager);
-        textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_GROOVY);
-        textArea.addSupport();
-//        textArea.groovyLanguageSupport = langSupport.groovyLanguageSupport;
-        if(langSupport.osInegrationClient!=null) {
-            textArea.addExternalMemberClickedListener(
-                    new RstaOpenMember(langSupport.osInegrationClient));
-        }
-    }
-
+    // used ?
     public Component getScriptSource() {
-        return scrollPane;
+        return textArea.scrollPane;
     }
 
+    // t:dual
     public void prepareAndRun() {
         textArea.removeAllLineHighlights();
     }
 
+    // t:dual
     public void highLightLineAsError(int line) throws BadLocationException {
         textArea.addLineHighlight(line, Color.PINK);
     }
 
-    private void highLightCurrentExecutingLine(int line) throws BadLocationException {
+    // t:dual
+    protected void highLightCurrentExecutingLine(int line) throws BadLocationException {
         textArea.removeAllLineHighlights();
         textArea.addLineHighlight(line, Color.cyan);
     }
@@ -165,7 +134,7 @@ public abstract class GroovyShellGuiRSyntaxTextArea {
         }
     }
 
-    public void additionalHilighter() {
+    protected void additionalHilighter() {
 
     }
 
@@ -242,7 +211,7 @@ public abstract class GroovyShellGuiRSyntaxTextArea {
         return -1;
     }
 
-    public void codeStopped() {
+    void codeStopped() {
         codeThread = null;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -275,12 +244,13 @@ public abstract class GroovyShellGuiRSyntaxTextArea {
 
     }
 
+    @Deprecated
     public RTextScrollPane getScrollPane() {
-        return scrollPane;
+        return textArea.scrollPane;
     }
 
     public Component getComponent() {
-        return scrollPane;
+        return textArea.scrollPane;
     }
 
     public void replaceRange(String value, int start, int end) {
@@ -302,7 +272,7 @@ public abstract class GroovyShellGuiRSyntaxTextArea {
     }
 
     public void setLineNumbersEnabled(boolean selected) {
-        scrollPane.setLineNumbersEnabled(selected);
+        textArea.scrollPane.setLineNumbersEnabled(selected);
 
     }
 

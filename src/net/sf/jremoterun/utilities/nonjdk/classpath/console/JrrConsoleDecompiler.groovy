@@ -21,8 +21,8 @@ class JrrConsoleDecompiler implements ClassNameSynonym{
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
-    void f1(File from, File toDir) {
-        String[] args = [from.absolutePath, toDir.absolutePath]
+    void decompileDirect(File from, File toDir) {
+        String[] args = [from.getAbsolutePath(), toDir.getAbsolutePath()]
         ConsoleDecompiler.main(args)
     }
 
@@ -60,6 +60,7 @@ class JrrConsoleDecompiler implements ClassNameSynonym{
     void decompile(File jarFile, String className, Map options) {
         FernflowerDecompiler2 fernflowerDecompiler = new FernflowerDecompiler2(options)
         fernflowerDecompiler.addFiles.addRtJar()
+        fernflowerDecompiler.addFiles.addJfrJarsIfExists()
         String decompile = fernflowerDecompiler.decompile(jarFile, className)
         log.info "${decompile}"
     }

@@ -47,7 +47,12 @@ class CustomRunners {
         JPanel panel2 = new JPanel(new FlowLayout())
         JButton refreshButton = new JButton("Refresh")
         refreshButton.addActionListener {
-            refresh(panel2)
+            refreshButton.setEnabled(false)
+            try {
+                refresh(panel2)
+            }finally{
+                refreshButton.setEnabled(true)
+            }
         }
         refresh(panel2)
         JPanel panel = createCustomRunners();
@@ -76,6 +81,7 @@ class CustomRunners {
         JButton button = new JButton(f.name.replace('.groovy', ''))
         button.addActionListener {
             osInegrationClient.saveAllEditors()
+            button.setEnabled(false)
             Runnable r = {
                 try {
                     log.info "file ${f} calling .."
@@ -88,6 +94,10 @@ class CustomRunners {
                 } catch (Throwable e) {
                     log.info "${f} ${e}"
                     JrrUtilities.showException(f.name, e)
+                }finally{
+                    SwingUtilities.invokeLater {
+                        button.setEnabled(true)
+                    }
                 }
             }
             Thread thread = new Thread(r, "${f.name} custom runner")

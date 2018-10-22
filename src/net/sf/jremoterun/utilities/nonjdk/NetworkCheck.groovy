@@ -16,42 +16,49 @@ import groovy.transform.CompileStatic;
 
 
 @CompileStatic
-class NetworkCheck extends TestCase{
+class NetworkCheck extends TestCase {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
+    public static int timeoutInMs = 101_000;
 
-
-    void testCheckGithub(){
-        URL url = new URL("https://github.com/")
-//        String text = url.text
-//        assert text.contains("GitHub, Inc.")
-        Document parse = Jsoup.parse(url, 10_1000)
-        Elements els = parse.select("h3")
-
-        assert els.first()!=null
+    Document dumpConetent(URL url){
+        String text1 = url.text
+        log.info "text for ${url} = ${text1}"
+        try {
+            return Jsoup.parse(text1)
+        } catch (Exception e) {
+            throw new Exception("failed parse ${text1}", e)
+        }
     }
 
-    void testCheckMaven(){
+    void testCheckGithub() {
+        URL url = new URL("https://github.com/")
+        Document parse = dumpConetent(url);
+//        Document parse = Jsoup.parse(url, timeoutInMs)
+        Elements els = parse.select("h3")
+        assert els.first() != null
+    }
+
+    void testCheckMaven() {
         MavenId sample = new MavenId("log4j:log4j:1.2.17");
         MavenCommonUtils mavenCommonUtils = new MavenCommonUtils()
-        String suffix = mavenCommonUtils.buildMavenPath(sample).replace('.jar','.pom')
+        String suffix = mavenCommonUtils.buildMavenPath(sample).replace('.jar', '.pom')
         URL url = new URL(mavenCommonUtils.mavenDefaultSettings.mavenServer + '/' + suffix);
         String text = url.text;
         assert text.contains("<artifactId>log4j</artifactId>")
 
     }
 
-    void testCheckMavenDownload(){
+    void testCheckMavenDownload() {
         IvyDepResolver2.setDepResolver()
         MavenId sample = new MavenId("log4j:log4j:1.2.17");
         MavenDependenciesResolver dependenciesResolver = MavenDefaultSettings.mavenDefaultSettings.mavenDependenciesResolver
-        assert dependenciesResolver!=null
-        dependenciesResolver.resolveAndDownloadDeepDependencies(sample,false,false);
+        assert dependenciesResolver != null
+        dependenciesResolver.resolveAndDownloadDeepDependencies(sample, false, false);
     }
 
 
-
-    void testCheckAll(){
+    void testCheckAll() {
         testCheckGithub()
         testCheckMaven()
         testCheckMavenDownload()

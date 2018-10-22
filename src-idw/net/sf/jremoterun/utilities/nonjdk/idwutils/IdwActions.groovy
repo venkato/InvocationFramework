@@ -93,12 +93,12 @@ class IdwActions {
         if (fw == null && dw.windowParent instanceof FloatingWindow) {
             fw = dw.windowParent as FloatingWindow
         }
-        log.info "${dw.windowParent.class.name}"
+        //log.info "${dw.windowParent.class.name}"
 //        log.info "${dw.windowParent.windowParent.class.name}"
         if (fw == null) {
             log.info "not fw"
-            if (dw.maximizable) {
-                log.info "${dw.maximized}"
+            if (dw.isMaximizable()) {
+                log.info "isMaximized = ${dw.isMaximized()}"
                 if (dw.maximized) {
                     dw.restore()
                 } else {

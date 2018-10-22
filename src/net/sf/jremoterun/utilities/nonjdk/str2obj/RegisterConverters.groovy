@@ -33,6 +33,7 @@ class RegisterConverters implements Runnable {
         regConverters3(cust, new SocketConverter())
         regConverters3(cust, new ClassConverter())
         regConverters3(cust, new InetAddressConverter())
+        regConverters3(cust, new DateOnlyBackConverter())
 //        log.info "converter registered"
     }
 
@@ -46,7 +47,7 @@ class RegisterConverters implements Runnable {
 
 
     static Class deriveType(Class clazz) {
-        Type[] interfaces = clazz.genericInterfaces
+        Type[] interfaces = clazz.getGenericInterfaces();
         List<ParameterizedType> paramType = (List)interfaces.toList().findAll { it instanceof ParameterizedType }
         ParameterizedType parameterizedType = paramType.find { it.rawType == StringToObjectConverterI2 }
         Class aClass = parameterizedType.actualTypeArguments[0]

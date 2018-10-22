@@ -3,9 +3,11 @@ package net.sf.jremoterun.utilities.nonjdk.classpath.refs
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.classpath.MavenIdContains
+import net.sf.jremoterun.utilities.classpath.ToFileRef2
+import net.sf.jremoterun.utilities.nonjdk.enumutils.EnumNameProvider
 
 @CompileStatic
-enum BouncyCastleMavenIds implements MavenIdContains {
+enum BouncyCastleMavenIds implements MavenIdContains, EnumNameProvider, ToFileRef2 {
 
 
     bcprov_ext_debug_jdk15on,
@@ -23,9 +25,19 @@ enum BouncyCastleMavenIds implements MavenIdContains {
     MavenId m;
 
     BouncyCastleMavenIds() {
-        m = new MavenId('org.bouncycastle', name().replace('_', '-'), '1.60');
+        m = new MavenId('org.bouncycastle', name().replace('_', '-'), '1.62');
     }
 
     public static List<BouncyCastleMavenIds> all = values().toList()
 
+
+    @Override
+    String getCustomName() {
+        return m.artifactId
+    }
+
+    @Override
+    File resolveToFile() {
+        return m.resolveToFile()
+    }
 }

@@ -52,8 +52,7 @@ class WinptyDownloader {
     }
 
     static void copyLinuxNativeLibs(File toDir){
-        CustomObjectHandlerImpl handler = MavenDefaultSettings.mavenDefaultSettings.customObjectHandler as CustomObjectHandlerImpl
-        File nativeLibs = handler.resolveRef(GitReferences.pty4jLinuxLibs)
+        File nativeLibs = GitReferences.pty4jLinuxLibs.resolveToFile()
         FileUtils.copyDirectory(nativeLibs,toDir)
     }
 

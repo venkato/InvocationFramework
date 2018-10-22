@@ -30,12 +30,15 @@ public class EclipseJavaCompilerPure {
         }else{
             assert f.directory
             f.eachFileRecurse(FileType.FILES, {
-                File f2 = it as File
-                String name = f2.name
-                if (name.endsWith('.java')) {
-                    files.add(f2)
-                }
+                addFileImpl(it)
             })
+        }
+    }
+
+    void addFileImpl(File f2){
+        String name = f2.name
+        if (name.endsWith('.java')) {
+            files.add(f2)
         }
     }
 
@@ -53,13 +56,19 @@ public class EclipseJavaCompilerPure {
         assert outputDir.listFiles().length == 0
     }
 
-    void compile() {
-        assert javaVersion!=null
-        checkOutDir()
-        String[] javacParameters = makeParameters();
+    StringWriter createCompiler( ){
         StringWriter javacOutput = new StringWriter();
         PrintWriter writer = new PrintWriter(javacOutput);
         compiler3 = new EclipseCompiler3(writer, writer, false, null, null)
+        return javacOutput
+    }
+
+    void compile() {
+        assert javaVersion!=null
+        checkOutDir()
+        files = files.unique();
+        String[] javacParameters = makeParameters();
+        StringWriter javacOutput  = createCompiler()
         boolean result = compile2(javacParameters)
 //        log.info "result : ${result}"
         if (result) {
@@ -83,6 +92,9 @@ public class EclipseJavaCompilerPure {
 
 
     private String[] makeParameters() {
+        if(files.size()==0){
+            throw new Exception("No file to compile")
+        }
         LinkedList<String> params = new LinkedList<String>();
         params.addAll(additionalFlags)
         params.add("-d");

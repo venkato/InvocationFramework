@@ -24,7 +24,7 @@ class AddFilesToJavasistPool extends AddFilesToClassLoaderGroovy {
 
     @Override
     void addFileImpl(File file) throws Exception {
-        classPool.appendClassPath(file.absolutePath);
+        classPool.appendClassPath(file.getAbsolutePath());
     }
 
 

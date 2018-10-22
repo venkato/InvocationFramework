@@ -3,6 +3,9 @@ package net.sf.jremoterun.utilities.nonjdk.compile
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.nonjdk.antutils.JrrAntUtils
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitSomeRefs
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JrrStarterJarRefs2
 import net.sf.jremoterun.utilities.nonjdk.langi.JrrStaticCompilationVisitor
 import net.sf.jremoterun.utilities.nonjdk.log.FileExtentionClass
 import net.sf.jremoterun.utilities.nonjdk.log.JdkLoggerExtentionClass
@@ -32,11 +35,12 @@ class GroovyCustomCompiler extends GenericCompiler {
 
     File dest
 
-    void zip() {
+    File zip() {
         FileUtils.copyDirectory(new File(baseDir, "resources-groovy"), params.outputDir)
         dest = new File(baseDir, "build/groovy_custom.jar")
         dest.delete()
         ZipUtil.pack(params.outputDir, dest)
+        return dest
     }
 
 
@@ -47,6 +51,13 @@ class GroovyCustomCompiler extends GenericCompiler {
         zip()
     }
 
+
+    void updateCompilerDefaultDir() {
+        File child = GitSomeRefs.starter.childL('libs/origin/groovy_custom.jar').resolveToFile()
+        assert child.exists()
+        updateCompiler(child)
+        FileUtils.copyFile(child, JrrStarterJarRefs2.groovy_custom.resolveToFile())
+    }
 
     void updateCompiler(File compilerJar) {
 

@@ -7,7 +7,7 @@ import net.sf.jremoterun.utilities.classpath.ToFileRef2
 import java.util.logging.Logger
 
 @CompileStatic
-class FileToFileRef implements ToFileRef2 {
+class FileToFileRef implements ToFileRef2,ZeroOverheadFileRef {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
@@ -20,5 +20,10 @@ class FileToFileRef implements ToFileRef2 {
     @Override
     File resolveToFile() {
         return file
+    }
+
+    @Override
+    String toString() {
+        return "${file}";
     }
 }

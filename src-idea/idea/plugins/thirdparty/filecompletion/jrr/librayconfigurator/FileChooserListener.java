@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.TextFieldWithHistory;
+import groovy.transform.CompileStatic;
 import net.sf.jremoterun.utilities.JrrClassUtils;
 
 import java.awt.event.ActionEvent;
@@ -15,6 +16,7 @@ import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@CompileStatic
 public class FileChooserListener implements ActionListener {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();

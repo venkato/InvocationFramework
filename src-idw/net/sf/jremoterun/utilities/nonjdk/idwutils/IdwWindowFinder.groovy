@@ -71,6 +71,7 @@ class IdwWindowFinder implements KeyEventDispatcher {
                     case KeyEvent.VK_DOWN:
                         treeSwing.requestFocus()
                         treeSwing.requestFocusInWindow()
+                        break;
                     case KeyEvent.VK_ENTER:
                         List<IdwWindowWrapper> windows = findMatchedWindows();
                         if (windows.size() == 1) {

@@ -13,6 +13,7 @@ class GitPushHook extends InjectedCode {
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
 
+    public static boolean enabledCheck = true;
     public static String enabledUrlPush = "";
 
 
@@ -26,11 +27,15 @@ class GitPushHook extends InjectedCode {
     }
 
 
-    void checkImpl(org.eclipse.jgit.transport.Transport transport){
-        log.info "checking : ${transport.getURI()}"
-        URIish uris = transport.getURI();
-        if (!uris.toString().startsWith(enabledUrlPush)) {
-            throw new IllegalStateException("push not allowed for : " + uris);
+    void checkImpl(org.eclipse.jgit.transport.Transport transport) {
+        if (enabledCheck) {
+            log.info "checking : ${transport.getURI()}"
+            URIish uris = transport.getURI();
+            if (!uris.toString().startsWith(enabledUrlPush)) {
+                throw new IllegalStateException("push not allowed for : " + uris);
+            }
+        }else{
+            log.info "check disabled, pushing ${transport.getURI()}"
         }
 
     }

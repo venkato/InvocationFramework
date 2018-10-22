@@ -3,6 +3,8 @@ package net.sf.jremoterun.utilities.nonjdk
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.nonjdk.classpath.tester.ClasspathTester
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.TeeOutputStream
 
 import java.util.logging.Logger
@@ -12,10 +14,11 @@ class GeneralUtils {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
+    public static long defaultLogIntervalInSeconds =3600
     static List<String> defaultEnv = createDefaultEnv2()
 
     static Thread startLogTimer() {
-        startLogTimer(3600_000)
+        startLogTimer(defaultLogIntervalInSeconds* 1000)
     }
 
     static Thread startLogTimer(long interval) {
@@ -116,8 +119,33 @@ class GeneralUtils {
         return process;
     }
 
+    static Process runNativeProcessRedirectOutputToFile(String cmd, File runDir, boolean exceptionOnError, File outputFile, int rotationDepth) {
+        if (runDir != null) {
+            assert runDir.exists()
+        }
+        FileRotate.rotateFile(outputFile,rotationDepth)
+        BufferedOutputStream outputStream2 = outputFile.newOutputStream()
+        Process process = cmd.execute(defaultEnv, runDir);
+        try {
+            waitFinish(process, outputStream2, outputStream2, exceptionOnError)
+        }finally{
+            try {
+                outputStream2.flush()
+                outputStream2.close()
+            }catch(Throwable e){
+                log.info ("failed close file : ${outputFile}",e)
+            }
+
+        }
+        return process;
+    }
+
+
 
     public static void checkDiskFreeSpace(File file, long minFreeSpaceInMb) throws IOException {
+        if(!file.exists()){
+            throw new FileNotFoundException(file.getAbsolutePath());
+        }
         long freeSpace = file.getFreeSpace() / 1_000_000 as long;
         if (freeSpace < minFreeSpaceInMb) {
             throw new IOException("low free space " + freeSpace + " mb in " + file.getAbsolutePath());

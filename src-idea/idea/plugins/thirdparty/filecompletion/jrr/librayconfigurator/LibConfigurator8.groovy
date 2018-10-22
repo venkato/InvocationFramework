@@ -76,7 +76,7 @@ class LibConfigurator8 extends AddFileWithSources {
 
         TransactionGuard instance = TransactionGuard.getInstance();
         log.info "instance.contextTransaction = ${instance.contextTransaction}"
-        boolean allowed = ApplicationManager.getApplication().writeAccessAllowed
+        boolean allowed = ApplicationManager.getApplication().isWriteAccessAllowed()
         log.info "wite access ${allowed}"
         if (instance.contextTransaction == null) {
             Runnable r2 = {
@@ -89,7 +89,8 @@ class LibConfigurator8 extends AddFileWithSources {
             if (allowed) {
                 r.run()
             } else {
-                ApplicationManager.getApplication().runWriteAction(r3)
+                ApplicationManager.getApplication().invokeLaterOnWriteThread(r3)
+                //ApplicationManager.getApplication().runWriteAction(r3)
             }
         }
         if (exc.object != null) {
@@ -158,7 +159,7 @@ class LibConfigurator8 extends AddFileWithSources {
     @Override
     void addSourceFImpl(File source) {
 //        VirtualFile file = fileToVirtual(source)
-        source = source.canonicalFile
+        source = source.getCanonicalFile()
         String escapedJarURL2 = createLibUrl(source);
         if (sources.contains(escapedJarURL2)) {
             log.info "already contains ${source}"

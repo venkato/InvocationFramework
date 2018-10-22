@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitSomeRefs
 import net.sf.jremoterun.utilities.nonjdk.javacompiler.EclipseJavaCompilerPure
 import org.junit.Test
 import org.zeroturnaround.zip.ZipUtil
@@ -22,7 +23,7 @@ class JnaCoreCompiler  {
 
     void prepare() {
         if (baseDir == null) {
-            baseDir = GitReferences.jnaRepo.resolveToFile()
+            baseDir = GitSomeRefs.jnaRepo.resolveToFile()
         }
         compilerPure.adder.addFileWhereClassLocated(JrrUtilities)
 

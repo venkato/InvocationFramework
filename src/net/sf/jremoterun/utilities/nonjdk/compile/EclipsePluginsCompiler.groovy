@@ -7,6 +7,7 @@ import net.sf.jremoterun.utilities.groovystarter.st.JdkLogFormatter
 import net.sf.jremoterun.utilities.mdep.DropshipClasspath
 import net.sf.jremoterun.utilities.nonjdk.IfFrameworkSrcDirs
 import net.sf.jremoterun.utilities.nonjdk.classpath.CutomJarAdd
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.CustObjMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 
@@ -18,8 +19,8 @@ class EclipsePluginsCompiler extends GenericCompiler {
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     List mavenIds = [
-            LatestMavenIds.eclipseJavaCompiler,
-            LatestMavenIds.eclipseJavaAstParser,
+            CustObjMavenIds.eclipseJavaCompiler,
+            CustObjMavenIds.eclipseJavaAstParser,
             LatestMavenIds.jodaTime,
 //            new MavenId('org.eclipse.platform:org.eclipse.equinox.common:3.9.0'),
 //            new MavenId('org.eclipse.platform:org.eclipse.core.resources:3.12.0'),

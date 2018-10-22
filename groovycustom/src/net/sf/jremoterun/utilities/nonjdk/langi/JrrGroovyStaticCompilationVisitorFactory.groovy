@@ -14,21 +14,23 @@ class JrrGroovyStaticCompilationVisitorFactory {
 
     private static final Logger log = Logger.getLogger(JrrGroovyStaticCompilationVisitorFactory.name);
 
-    public static boolean useImprovedStaticCompiler
-    public static String useImprovedCompilerProp ="groovy.useImprovedCompiler"
+    public static boolean useImprovedStaticCompiler = true;
+    public static String useImprovedCompilerProp = "groovy.useImprovedCompiler"
 
     public static boolean loadJrrClassUtilsTryied = false
     public static ClassLoader cl = JrrGroovyStaticCompilationVisitorFactory.getClassLoader()
 
-    static {
+
+    static boolean getPropValueSetting() {
         String propsValue = System.getProperty(useImprovedCompilerProp);
-        boolean value4;
         if (propsValue == null) {
-            value4 = true
-        } else {
-            value4 = "true".equalsIgnoreCase(propsValue)
+            return true
         }
-        useImprovedStaticCompiler = value4
+        return "true".equalsIgnoreCase(propsValue)
+    }
+
+    static {
+        useImprovedStaticCompiler = getPropValueSetting()
     }
 
 

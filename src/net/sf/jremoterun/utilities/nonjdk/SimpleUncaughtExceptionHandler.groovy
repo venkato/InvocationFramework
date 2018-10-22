@@ -1,21 +1,22 @@
 package net.sf.jremoterun.utilities.nonjdk
 
-import groovy.transform.CompileStatic;
+import groovy.transform.CompileStatic
+import net.sf.jremoterun.utilities.JrrClassUtils;
 import net.sf.jremoterun.utilities.JrrUtilities;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.Thread.UncaughtExceptionHandler
+import java.util.logging.Logger;
 
 @CompileStatic
 public class SimpleUncaughtExceptionHandler implements UncaughtExceptionHandler {
 
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
+
 
     public static volatile boolean inited = false;
 
     public void uncaughtException(final Thread t, final Throwable e) {
-        log.info(t, e);
+        log.severe(t, e);
         JrrUtilities.showException("thread " + t.getId() + " " + t.getName(), e);
     }
 

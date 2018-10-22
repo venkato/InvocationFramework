@@ -14,6 +14,7 @@ import idea.plugins.thirdparty.filecompletion.jrr.a.javassist.JavassistCompletio
 import idea.plugins.thirdparty.filecompletion.jrr.a.remoterun.JrrIdeaBean
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.MavenId
+import net.sf.jremoterun.utilities.classpath.MavenIdAndRepoContains
 import net.sf.jremoterun.utilities.classpath.MavenIdContains
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
@@ -84,7 +85,7 @@ public class MyAcceptMavenProviderImpl implements ElementPattern<PsiElement> {
             return false;
         }
         PsiClass psiClass = type.resolve();
-        if (psiClass == null || !(psiClass.name.contains(MavenId.simpleName))) {
+        if (psiClass == null || !(psiClass.name.contains(MavenId.getSimpleName()))) {
             log.debug "not a maven id"
             return false;
         }
@@ -99,7 +100,7 @@ public class MyAcceptMavenProviderImpl implements ElementPattern<PsiElement> {
             log.info "enum type is null for ${e}"
             return false
         }
-        PsiType[] types = type.superTypes
+        PsiType[] types = type.getSuperTypes()
         if (types == null) {
             log.info("super type is null for ${type}")
             return false
@@ -111,8 +112,12 @@ public class MyAcceptMavenProviderImpl implements ElementPattern<PsiElement> {
             log.info("GrClassReferenceType not found for ${type}")
             return false
         }
-        GrClassReferenceType type1 = grClassReferenceTypes.find { it.name == MavenIdContains.getSimpleName() }
+        GrClassReferenceType type1 = grClassReferenceTypes.find { it.getName() == MavenIdContains.getSimpleName() }
         boolean found = type1 != null
+        if(!found){
+            type1 = grClassReferenceTypes.find { it.getName() == MavenIdAndRepoContains.getSimpleName() }
+            found = type1 != null
+        }
 
         if (found) {
             log.info "type1 = ${type1}"

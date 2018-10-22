@@ -68,7 +68,7 @@ public class OSIntegrationIdea implements DefaultObjectName, OsInegrationClientI
     public void buildAllProjects() throws Exception {
         ObjectWrapper<Boolean> aborted2 = new ObjectWrapper<>(false);
         ObjectWrapper<Integer> errors2 = new ObjectWrapper<>(0);
-        Project project = OSIntegrationIdea.openedProject
+        Project project = OSIntegrationIdea.getOpenedProject()
         invokeAndWaitInSwingThread {
             ApplicationManager.getApplication().runWriteAction {
                 log.info "refreshing all ..."
@@ -381,6 +381,12 @@ public class OSIntegrationIdea implements DefaultObjectName, OsInegrationClientI
         Runnable r = {ExecutionUtil.runConfiguration(configurationByName, executor);}
         JrrIdeaUtils.submitTr(r)
     }
+
+    static VirtualFile conevertFileToVirtual(File file){
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+        return virtualFile;
+    }
+
 
     @Override
     public void openFile(File file, String s) throws Exception {

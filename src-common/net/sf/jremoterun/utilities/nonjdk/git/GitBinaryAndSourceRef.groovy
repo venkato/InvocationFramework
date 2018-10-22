@@ -4,6 +4,7 @@ import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import groovy.transform.Sortable
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.FileChildLazyRef
 
 import java.util.logging.Logger
 
@@ -16,8 +17,8 @@ class GitBinaryAndSourceRef extends GitRef implements GitBinaryAndSourceRefRef {
 
     String src;
 
-    GitBinaryAndSourceRef(GitSpec repo, String bin, String src) {
-        super(repo, bin)
+    GitBinaryAndSourceRef(GitSpecRef repo, String bin, String src) {
+        super(repo.getGitSpec(), bin)
         this.src = src
     }
 
@@ -40,4 +41,12 @@ class GitBinaryAndSourceRef extends GitRef implements GitBinaryAndSourceRefRef {
     GitBinaryAndSourceRef getRef() {
         return this
     }
+
+
+
+    @Override
+    FileChildLazyRef childL(String child) {
+        return new FileChildLazyRef(this,child)
+    }
+
 }

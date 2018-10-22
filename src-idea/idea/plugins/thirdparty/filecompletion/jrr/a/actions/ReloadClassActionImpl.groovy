@@ -13,19 +13,24 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
 import groovy.transform.CompileStatic
+import idea.plugins.thirdparty.filecompletion.jrr.a.actions.reloadclass.ReloadClassSettingsI
 import idea.plugins.thirdparty.filecompletion.share.OSIntegrationIdea
+import net.sf.jremoterun.JrrUtils
 import net.sf.jremoterun.SimpleJvmTiAgent
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
-import net.sf.jremoterun.utilities.javassist.JrrJavassistUtils
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
 import org.jetbrains.plugins.groovy.lang.psi.impl.GroovyFileImpl
+
+import javax.swing.JOptionPane
 
 @CompileStatic
 public class ReloadClassActionImpl extends AnAction {
 
     private static final Logger log = LogManager.getLogger(JrrClassUtils.currentClass);
+
+    public static ReloadClassSettingsI reloadClassSettings;
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
@@ -74,11 +79,19 @@ public class ReloadClassActionImpl extends AnAction {
         Document document = FileEditorManager.getInstance(openedProject).getSelectedTextEditor().getDocument();
         PsiFile psiFile1 = psiDocumentManager.getPsiFile(document);
         String className = findClassName(psiFile1);
-        log.debug("class name 2 : " + className);
+        //log.debug("class name 2 : " + className);
 
-        if (className != null) {
-            Class clazz = ReloadClassActionImpl.getClassLoader().loadClass(className);
-            JrrJavassistUtils.reloadClassAndAnonClasses(clazz);
+        if (className == null) {
+
+        } else {
+            if (reloadClassSettings==null) {
+                throw new Exception("reloadClassSettings was not set")
+            }
+            reloadClassSettings.receiveConnection().redefineClassAndAnonClasses(className,reloadClassSettings.getClassLoaderId() );
+            JOptionPane.showMessageDialog(null, "Class reloaded : ${className}")
+//                Class clazz = ReloadClassActionImpl.getClassLoader().loadClass(className);
+//                JrrJavassistUtils.reloadClassAndAnonClasses(clazz);
+
         }
 
         //JnaBean.jnaBean.reloadClassAndAnonClasses(clazz);
@@ -89,8 +102,8 @@ public class ReloadClassActionImpl extends AnAction {
         try {
             startActionImpl2()
         } catch (Exception e) {
-            log.debug('', e);
-            JrrUtilities.showException("Class reload", e);
+            log.debug('failed reload class', e);
+            JrrUtilities.showException("Class reload", JrrUtils.getRootException(e) );
         }
         log.debug("action started");
     }

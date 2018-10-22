@@ -10,12 +10,18 @@ import net.sf.jremoterun.utilities.groovystarter.st.JdkLogFormatter
 import net.sf.jremoterun.utilities.mdep.DropshipClasspath
 import net.sf.jremoterun.utilities.nonjdk.InfocationFrameworkStructure
 import net.sf.jremoterun.utilities.nonjdk.classpath.CutomJarAdd
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.AsmOw
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.CustObjMavenIds
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.MaryDependentMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.NexusSearchMavenIds
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.SshdMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs2.CutomJarAdd1
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GroovyMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.Log4j2MavenIds
+import org.apache.commons.io.FileUtils
+import org.zeroturnaround.zip.ZipUtil
 
 import java.util.logging.Logger
 
@@ -32,10 +38,20 @@ class IfFrameworkCompiler extends GenericCompiler {
             LatestMavenIds.rstaui,
             LatestMavenIds.rstaAutoComplete,
             Log4j2MavenIds.slf4j_impl,
-            LatestMavenIds.sshd,
+            SshdMavenIds.core,
             LatestMavenIds.jline2,
             LatestMavenIds.jline3,
-            LatestMavenIds.commonsIo,
+            CustObjMavenIds.commonsIo,
+            LatestMavenIds.quickfixj,
+            LatestMavenIds.minaCore,
+            // janino used in idea plugin only
+            LatestMavenIds.javaCompiler2Janino,
+            LatestMavenIds.javaCompilerJaninoCommon,
+            LatestMavenIds.plexusClassworlds,
+            LatestMavenIds.jodaTime,
+            LatestMavenIds.svnNativeClintWrapper,
+            LatestMavenIds.svnClientAdapterJavahlUseless,
+            LatestMavenIds.svnClientAdapterMainUseless,
 //            LatestMavenIds.jsoup,
     ]
 
@@ -63,6 +79,8 @@ class IfFrameworkCompiler extends GenericCompiler {
         client.adder.addAll mavenIds
         client.adder.addAll NexusSearchMavenIds.all
         client.adder.addAll LatestMavenIds.usefulMavenIdSafeToUseLatest
+        client.adder.addAll AsmOw.all
+        client.adder.addAll MaryDependentMavenIds.values().toList()
         // client.adder.add GroovyMavenIds.groovyCore
         client.adder.add JeditTermCompilerConsoleCompiler.compileIfNeededS()
         CutomJarAdd.addCustom(client.adder)
@@ -92,6 +110,11 @@ class IfFrameworkCompiler extends GenericCompiler {
     }
 
 
+
+    void zipp(File destJar) {
+        ZipUtil.pack(params.outputDir, destJar)
+    }
+
     static ClRef ideaRedefinitionTester = new ClRef('net.sf.jremoterun.utilities.nonjdk.idea.IdeaRedefineClassloaderTester')
 
     static ClRef commonRedefinitionTester = new ClRef('net.sf.jremoterun.utilities.nonjdk.javassist.ClassRedefinitionTester')
@@ -109,6 +132,8 @@ class IfFrameworkCompiler extends GenericCompiler {
 
         })
     }
+
+
 
 
 }

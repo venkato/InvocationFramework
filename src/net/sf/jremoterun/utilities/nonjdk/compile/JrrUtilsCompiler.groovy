@@ -6,6 +6,7 @@ import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.groovystarter.GroovyMethodRunnerParams
 import net.sf.jremoterun.utilities.mdep.DropshipClasspath
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitSomeRefs
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import org.apache.commons.io.FileUtils
 import org.zeroturnaround.zip.ZipUtil
@@ -25,7 +26,8 @@ class JrrUtilsCompiler extends GenericCompiler {
 
     void prepare() {
         params.javaVersion = '1.6'
-        client.adderParent.addAll DropshipClasspath.allLibsWithGroovy
+        client.adder.addAll DropshipClasspath.allLibsWithGroovy
+//        client.adderParent.addAll DropshipClasspath.allLibsWithGroovy
         client.adder.addGenericEnteries(mavenIds)
         client.adder.addFileWhereClassLocated(JrrUtilities)
         client.adder.addFileWhereClassLocated(JrrClassUtils)
@@ -45,7 +47,7 @@ class JrrUtilsCompiler extends GenericCompiler {
             if(testFile.exists()) {
                 baseDir = GroovyMethodRunnerParams.gmrp.grHome
             }else {
-                baseDir = GitReferences.starter.resolveToFile()
+                baseDir = GitSomeRefs.starter.resolveToFile()
             }
         }
         addInDir new File(baseDir, 'JrrUtilities/src')
@@ -64,6 +66,7 @@ class JrrUtilsCompiler extends GenericCompiler {
             assert destJar.parentFile.mkdir()
         }
         FileUtils.copyFile(tmpJar,destJar)
+        log.info "copied to ${destJar}"
         return destJar
     }
 

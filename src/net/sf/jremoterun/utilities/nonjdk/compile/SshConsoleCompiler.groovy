@@ -7,7 +7,9 @@ import net.sf.jremoterun.utilities.groovystarter.st.JdkLogFormatter
 import net.sf.jremoterun.utilities.mdep.DropshipClasspath
 import net.sf.jremoterun.utilities.nonjdk.InfocationFrameworkStructure
 import net.sf.jremoterun.utilities.nonjdk.classpath.CutomJarAdd
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.CustObjMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.NexusSearchMavenIds
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.SshdMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs2.CutomJarAdd1
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GroovyMavenIds
@@ -27,7 +29,7 @@ class SshConsoleCompiler extends GenericCompiler {
             LatestMavenIds.logbackCore,
             LatestMavenIds.guavaMavenId,
             LatestMavenIds.junit,
-            LatestMavenIds.sshd,
+            SshdMavenIds.core,
             LatestMavenIds.rsyntaxtextarea,
             LatestMavenIds.rstaui,
             LatestMavenIds.rstaAutoComplete,
@@ -36,7 +38,7 @@ class SshConsoleCompiler extends GenericCompiler {
             Log4j2MavenIds.slf4j_impl,
             LatestMavenIds.jline2,
             LatestMavenIds.jline3,
-            LatestMavenIds.commonsIo,
+            CustObjMavenIds.commonsIo,
     ]
 
     SshConsoleCompiler() {
@@ -62,6 +64,7 @@ class SshConsoleCompiler extends GenericCompiler {
         client.adder.addFileWhereClassLocated(JdkLogFormatter)
         client.adder.add mcu.getToolsJarFile()
         client.adder.addAll mavenIds
+        client.adder.addAll IfFrameworkCompiler.mavenIds
         client.adder.addAll GroovyMavenIds.all
         client.adder.addAll DropshipClasspath.allLibsWithGroovy
         client.adder.addAll NexusSearchMavenIds.all

@@ -9,6 +9,7 @@ import net.sf.jremoterun.utilities.nonjdk.classpath.refs.CustObjMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GroovyMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.Log4j2MavenIds
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.SshdMavenIds
 
 import java.util.logging.Logger
 
@@ -17,7 +18,6 @@ import static net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds.g
 import static net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds.jline2
 import static net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds.jline3
 import static net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds.junit
-import static net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds.sshd
 
 @CompileStatic
 class DefaultClasspathAdder extends InjectedCode {
@@ -52,6 +52,6 @@ class DefaultClasspathAdder extends InjectedCode {
         };
         adder.addMWithDependeciesDownload jline3
         adder.addMWithDependeciesDownload jline2
-        adder.addMWithDependeciesDownload sshd
+        adder.addMWithDependeciesDownload SshdMavenIds.core
     }
 }

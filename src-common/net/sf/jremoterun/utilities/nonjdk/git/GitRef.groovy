@@ -2,7 +2,11 @@ package net.sf.jremoterun.utilities.nonjdk.git
 
 import groovy.transform.Canonical
 import groovy.transform.Sortable;
-import net.sf.jremoterun.utilities.JrrClassUtils;
+import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.classpath.ToFileRef2
+import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.ChildFileLazy
+import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.FileChildLazyRef
+
 import java.util.logging.Logger;
 import groovy.transform.CompileStatic;
 
@@ -10,13 +14,15 @@ import groovy.transform.CompileStatic;
 @Canonical
 @CompileStatic
 @Sortable
+@Deprecated
 class GitRef extends GitSpec implements GitRefRef{
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     String pathInRepo;
 
-    GitRef(GitSpec repo, String pathInRepo) {
+    GitRef(GitSpecRef repo1, String pathInRepo) {
+        GitSpecRef repo = repo1.getGitSpec()
         this.repo = repo.repo
         this.branch = repo.branch
         this.commitId = repo.commitId
@@ -36,7 +42,7 @@ class GitRef extends GitSpec implements GitRefRef{
 
     @Override
     GitSpec getSpecOnly() {
-        GitSpec gitSpec = new GitSpec(repo,commitId,branch,tag)
+        GitSpec gitSpec = new GitSpec(repo, commitId, branch, tag)
         return gitSpec
     }
 
@@ -44,4 +50,5 @@ class GitRef extends GitSpec implements GitRefRef{
     GitRef getRef() {
         return this
     }
+
 }

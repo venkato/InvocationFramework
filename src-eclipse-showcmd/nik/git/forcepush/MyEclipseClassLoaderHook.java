@@ -14,11 +14,10 @@ import org.eclipse.osgi.internal.loader.BundleLoader;
 import org.eclipse.osgi.internal.loader.ModuleClassLoader;
 
 import net.sf.jremoterun.utilities.JrrClassUtils;
-import sun.reflect.Reflection;
 
 public class MyEclipseClassLoaderHook extends ClassLoaderHook {
 
-	private static final Logger log = Logger.getLogger(Reflection.getCallerClass(1).getName());
+	private static final Logger log = Logger.getLogger(JrrClassUtils.getCurrentClass().getName());
 
 	public static MyEclipseClassLoaderHook myEclipseClassLoaderHook2;
 
@@ -29,7 +28,7 @@ public class MyEclipseClassLoaderHook extends ClassLoaderHook {
 	public boolean isMyModule(ModuleClassLoader classLoader) {
 		String symbolicName = classLoader.getBundle().getSymbolicName();
 		if (myModules.contains(symbolicName)) {
-			log.info("my module search class");
+			// log.info("my module search class");
 			return true;
 		}
 		return false;
@@ -45,7 +44,7 @@ public class MyEclipseClassLoaderHook extends ClassLoaderHook {
 			if (name.startsWith(entry.getKey())) {
 				BundleLoader bundleLoader = entry.getValue();
 				Class<?> findClass = bundleLoader.findClass(name);
-				log.info("class found");
+				log.info("class found : "+name);
 				return findClass;
 			}
 		}

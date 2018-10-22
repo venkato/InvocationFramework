@@ -2,6 +2,7 @@ package net.sf.jremoterun.utilities.nonjdk
 
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.nonjdk.net.ProxyTrackerI
 
 import java.util.logging.Logger
 
@@ -22,6 +23,7 @@ class ProxySetter extends ProxySelector {
     public static String proxyPassword = 'proxyPassword'
     public static String proxySet = 'proxySet'
     public static List<String> prefix = ['http', 'https', 'ftp',]
+    public ProxyTrackerI proxyTracker
 
     Set<String> noProxyConcreatHosts = new HashSet<>()
     Set<String> noProxyPatternHosts = new HashSet<>()
@@ -79,6 +81,9 @@ class ProxySetter extends ProxySelector {
             }
         }
         log.info "connecting to ${uri} ${useProxy}"
+        if(proxyTracker!=null) {
+            proxyTracker.accessRequested(uri, useProxy)
+        }
         if(useProxy){
             return defaultProxy
         }

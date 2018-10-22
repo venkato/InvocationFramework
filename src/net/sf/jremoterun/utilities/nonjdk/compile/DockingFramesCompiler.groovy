@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.MavenCommonUtils
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitSomeRefs
 
 import java.util.logging.Logger
 
@@ -24,7 +25,7 @@ class DockingFramesCompiler extends GenericCompiler {
         params.printWarning = false
         params.javaVersion = '1.8'
         if (baseDir2 == null) {
-            baseDir2 = GitReferences.dockingFrames.resolveToFile()
+            baseDir2 = GitSomeRefs.dockingFrames.resolveToFile()
         }
         log.info "${baseDir2}"
         List<File> dirs = findSrc(baseDir2)

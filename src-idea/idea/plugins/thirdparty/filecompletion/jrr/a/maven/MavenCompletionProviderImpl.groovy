@@ -12,6 +12,7 @@ import com.intellij.util.ProcessingContext
 import groovy.io.FileType
 import groovy.transform.CompileStatic
 import idea.plugins.thirdparty.filecompletion.jrr.IdeaMagic
+import idea.plugins.thirdparty.filecompletion.jrr.a.actions.CompletionProviderCommon
 import idea.plugins.thirdparty.filecompletion.jrr.a.file.MyAcceptFileProviderImpl
 import idea.plugins.thirdparty.filecompletion.share.Ideasettings.IdeaJavaRunner2Settings
 import idea.plugins.thirdparty.filecompletion.share.OSIntegrationIdea
@@ -23,12 +24,11 @@ import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.classpath.MavenId
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
-import org.jetbrains.annotations.NotNull
 
 import javax.swing.Icon
 
 @CompileStatic
-public class MavenCompletionProviderImpl extends CompletionProvider<CompletionParameters> {
+public class MavenCompletionProviderImpl extends CompletionProviderCommon {
 
     private static final Logger log = LogManager.getLogger(JrrClassUtils.currentClass);
 
@@ -217,7 +217,7 @@ public class MavenCompletionProviderImpl extends CompletionProvider<CompletionPa
 
     @Override
     protected void addCompletions(
-            @NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
+             CompletionParameters parameters, ProcessingContext context, CompletionResultSet result) {
         PsiElement psiElement = parameters.position;
         if (!(psiElement instanceof LeafPsiElement)) {
             return;

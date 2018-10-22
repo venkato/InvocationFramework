@@ -29,6 +29,8 @@ class IdeaSourcesCompiler extends IfFrameworkCompiler {
             CustObjMavenIds.git,
             LatestMavenIds.jsoup,
             LatestMavenIds.jodaTime,
+            LatestMavenIds.javaCompiler2Janino,
+            LatestMavenIds.javaCompilerJaninoCommon,
     ]
 
 

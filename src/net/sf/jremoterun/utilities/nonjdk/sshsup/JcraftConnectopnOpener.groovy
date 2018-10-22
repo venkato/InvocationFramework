@@ -13,52 +13,79 @@ class JcraftConnectopnOpener implements UserInfo {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
+    public static int defaultLogonTimeout = 10000;
+    public int logonTimeoutInMs = defaultLogonTimeout;
+
+    /**
+     * -1 : mean disable
+     */
+    public static int defaultAfterLogonTimeout = -1
+
     SshConSet2 conSet2
 
-    Session session
+    JrrJschSession session
 
     JSch jsch;
 
-    void init(){
-        JSch jsch2 = new JSch();
+    boolean showMessageProp = true
+
+    String lastMessage;
+
+    void init() {
+        JrrJSch jsch2 = new JrrJSch();
         configure(jsch2);
     }
 
-    void configure(JSch jsch){
+    void configure(JSch jsch) {
         this.jsch = jsch
         defaultAddKnownHosts()
         defaultPrivateKey()
         session = createSession();
-        if(conSet2.password!=null){
-            session.password = conSet2.password
+        if (conSet2.password != null) {
+            session.setPassword( conSet2.password)
             session.setUserInfo(this)
+        }
+        if(conSet2.user!=null){
+            if (session instanceof JrrJschSession) {
+                JrrJschSession  session7= (JrrJschSession) session;
+                session7.setUserName(conSet2.user)
+
+            }
+
         }
         final java.util.Properties config = new java.util.Properties();
         config.put("compression.s2c", "zlib,none");
         config.put("compression.c2s", "zlib,none");
         configureSession(session, config);
         session.connect();
-        session.setTimeout(0);
+        if (defaultAfterLogonTimeout >= 0) {
+            session.setTimeout(defaultAfterLogonTimeout);
+        }
     }
 
     void configureSession(Session session, Properties config) {
         session.setConfig(config);
-        session.setTimeout(5000);
+        if(logonTimeoutInMs>=0) {
+            session.setTimeout(logonTimeoutInMs);
+        }
     }
 
-    Session createSession(){
-        Session session2 = jsch.getSession(conSet2.user, conSet2.host, conSet2.port);
+    JrrJschSession createSession() {
+        assert conSet2.host!=null
+        //Session session2 = jsch.getSession(conSet2.user, conSet2.host, conSet2.port);
+        JrrJschSession session2 = new JrrJschSession(jsch,conSet2.user, conSet2.host, conSet2.port);
+        session2.jcraftConnectopnOpener = this
         return session2
     }
 
-    void defaultAddKnownHosts(){
-        if (conSet2.knownHosts!=null) {
+    void defaultAddKnownHosts() {
+        if (conSet2.knownHosts != null) {
             jsch.setKnownHosts(conSet2.knownHosts.absolutePath);
         }
     }
 
-    void defaultPrivateKey(){
-        if (conSet2.sshKey!=null) {
+    void defaultPrivateKey() {
+        if (conSet2.sshKey != null) {
             jsch.addIdentity(conSet2.sshKey.absolutePath);
         }
     }
@@ -90,6 +117,9 @@ class JcraftConnectopnOpener implements UserInfo {
 
     @Override
     void showMessage(String message) {
-        log.info "${message}"
+        if (conSet2.showMessage) {
+            log.info "${message}"
+        }
+        lastMessage = message
     }
 }

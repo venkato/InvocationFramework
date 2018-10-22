@@ -10,17 +10,30 @@ import net.sf.jremoterun.utilities.classpath.MavenCommonUtils
 import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.classpath.MavenIdContains
 import net.sf.jremoterun.utilities.nonjdk.classpath.UrlCLassLoaderUtils2
+import net.sf.jremoterun.utilities.nonjdk.problemchecker.ProblemCollectorI
+import net.sf.jremoterun.utilities.nonjdk.problemchecker.ProblemCollectorIThrowImmediate
+import net.sf.jremoterun.utilities.nonjdk.problemchecker.ProblemFoundException
+import net.sf.jremoterun.utilities.nonjdk.problemchecker.ProblemHelper
 
 import java.util.logging.Logger
 
+@Deprecated
 @CompileStatic
-public abstract class ClassPathTesterHelper implements Runnable {
+public abstract class ClassPathTesterHelper extends ClassPathTesterHelper2 implements Runnable {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
-    ClassLoader currentClassLoader = ClassPathTesterHelper.getClassLoader();
+//    ClassLoader currentClassLoader = JrrClassUtils.getCurrentClassLoader()
 
     static MavenCommonUtils mavenCommonUtils = new MavenCommonUtils();
+
+    ClassPathTesterHelper(ProblemCollectorI problemCollector) {
+        super(problemCollector)
+    }
+
+    ClassPathTesterHelper() {
+        super(new ProblemCollectorIThrowImmediate())
+    }
 
     @Override
     public final void run() {
@@ -32,136 +45,63 @@ public abstract class ClassPathTesterHelper implements Runnable {
         }
     }
 
-    public static void checkClassInstanceOf(Object object, Class instanceOf) throws Exception {
-        Class<?> aClass = object.getClass();
-        URL location = JrrUtils.getClassLocation(aClass);
-        String msg = instanceOf.getName() + " class : " + aClass.getName() + " , location " + location;
-        if (aClass != instanceOf) {
-            throw new Exception(msg);
-        }
-//        log.info(msg);
+
+    static void checkClassInstanceOf(Object object, Class instanceOf) {
+        createClassPathTesterHelper2().checkClassInstanceOf5(object,instanceOf)
     }
 
-//    public void checkNoSuchClass(ClRef className) throws Exception {
-//        checkNoSuchClass(className.className)
-//    }
-
-    public void checkNoSuchClass(ClRef className) throws Exception {
-        checkNoSuchClass(className, currentClassLoader);
-    }
 
     static void checkTheSameClassLoader(Class clazz, ClassLoader classLoader) {
-        ClassLoader classLoader1 = clazz.getClassLoader()
-        if (classLoader1 != classLoader) {
-            if (classLoader1 == null) {
-                throw new Exception("Class ${clazz.name} loaded by boot classloader");
-            }
-            throw new Exception("Class ${clazz.name} loaded by diff classloader ${classLoader1.class.name} ${classLoader1}");
-        }
+        createClassPathTesterHelper2().checkTheSameClassLoader5(clazz,classLoader)
     }
 
-    public static void checkNoSuchClass(ClRef className, ClassLoader classLoader) throws Exception {
-        try {
-            Class<?> clazz = classLoader.loadClass(className.className);
-            checkTheSameClassLoader(clazz, classLoader)
-            File location = UrlCLassLoaderUtils.getClassLocation(clazz);
-            throw new Exception("${className.className} is present : ${location}");
-        } catch (ClassNotFoundException e) {
-
-        }
+    public static void checkNoSuchClass(ClRef className, ClassLoader classLoader) {
+        createClassPathTesterHelper2().checkNoSuchClass5(className,classLoader)
     }
 
-    public static void checkFieldExists(Class clazz, String field) throws Exception {
-        try {
-            JrrClassUtils.findField(clazz, field);
-        } catch (NoSuchFieldException e) {
-            File location = UrlCLassLoaderUtils.getClassLocation(clazz);
-            throw new Exception("In class " + clazz.getName() + " field not found " + field + " , location " + location);
-        }
+    public static void checkFieldExists(Class clazz, String field) {
+        createClassPathTesterHelper2().checkFieldExists5(clazz,field)
     }
 
 
     static void checkClassOnce(Class clazz, MavenIdContains mavenId) {
-        checkClassOnce(clazz, mavenCommonUtils.findMavenOrGradle(mavenId.getM()))
+        createClassPathTesterHelper2().checkClassOnce5(clazz, mavenId.getM())
     }
 
     static void checkClassOnce(Class clazz) {
-        List<File> files = UrlCLassLoaderUtils2.getClassLocationAll2(clazz);
-        assert files.size() == 1
+        createClassPathTesterHelper2().checkClassOnce5(clazz)
     }
 
+    @Deprecated
     static void checkClassNotFromPathNoEx(Class clazz, File notPath) {
         try {
             checkClassNotFromPath(clazz, notPath)
+        } catch (ProblemFoundException e) {
+            JrrUtilities.showException(e.getMessage(), e)
         } catch (UndesiredClassLocationException e) {
             JrrUtilities.showException(e.getMessage(), e)
         }
     }
 
     static void checkClassNotFromPath(Class clazz, File notPath) {
-        assert notPath.exists()
-        List<File> files = UrlCLassLoaderUtils2.getClassLocationAll2(clazz);
-        switch (files.size()) {
-            case 0:
-                throw new Exception("class was not found : ${clazz.name}")
-            case 1:
-                File actualFile = files[0]
-                if (actualFile == null) {
-                    throw new Exception("actual file is null for ${clazz}")
-                }
-                actualFile = actualFile.canonicalFile.absoluteFile
-                String actualPathS = actualFile.absolutePath;
-                String notPathS = notPath.absolutePath
-                if (actualPathS == notPathS) {
-                    throw new UndesiredClassLocationException("Class ${clazz.getName()} from undesired path : ${notPath}")
-                }
-                break;
-            default:
-                files = files.collect { it.canonicalFile }
-                throw new Exception("found many path ${files.size()} : ${files.join(' , ')}")
-        }
+        createClassPathTesterHelper2().checkClassNotFromPath5(clazz,notPath)
 
     }
 
     static void checkClassOnce(Class clazz, File expectedFile) {
-        if (expectedFile == null) {
-            throw new Exception("expectedFile is null for ${clazz}")
-        }
-        if (!expectedFile.exists()) {
-            throw new Exception("expectedFile ${expectedFile} not exists for ${clazz}")
-        }
-        expectedFile = expectedFile.canonicalFile.absoluteFile
-        List<File> files = UrlCLassLoaderUtils2.getClassLocationAll2(clazz);
-        switch (files.size()) {
-            case 0:
-                throw new Exception("class was not found : ${clazz.name}")
-            case 1:
-                File actualFile = files[0]
-                if (actualFile == null) {
-                    throw new Exception("actual file is null for ${clazz} ${expectedFile}")
-                }
-                actualFile = actualFile.canonicalFile.absoluteFile
-                assert actualFile == expectedFile
-                break;
-            default:
-                files = files.collect { it.canonicalFile }
-                throw new Exception("found many path ${files.size()} : ${files.join(' , ')}")
-        }
+        createClassPathTesterHelper2().checkClassOnce5(clazz,expectedFile)
     }
 
-    public static void checkClassLocation(Class clazz, MavenId mavenId) throws Exception {
-        checkClassLocation(clazz, mavenCommonUtils.findMavenOrGradle(mavenId));
+    public static void checkClassLocation(Class clazz, MavenId mavenId) {
+        createClassPathTesterHelper2().checkClassLocation5(clazz,mavenId)
     }
 
-    public static void checkClassLocation(Class clazz, File locationExpected) throws Exception {
-        File currentLocation = UrlCLassLoaderUtils.getClassLocation(clazz);
-        if (locationExpected != currentLocation) {
-            throw new Exception("class " + clazz.getName() + " location strange " + currentLocation);
-        }
+    public static void checkClassLocation(Class clazz, File locationExpected) {
+        createClassPathTesterHelper2().checkClassLocation5(clazz,locationExpected)
 
     }
 
-    public abstract void runImpl() throws Exception;
+    public abstract void runImpl();
 
 
 }

@@ -20,9 +20,13 @@ class SourceForgeDownloader {
         this.baseDir = baseDir
     }
 
-    File download(SfLink sfLink) {
+    File resolveIfDownloaded(SfLink sfLink) {
         String path2 = UrlSymbolsReplacer.replaceBadSymbols(sfLink.path)
         File f = new File(baseDir, path2)
+        return f
+    }
+    File download(SfLink sfLink) {
+        File f = resolveIfDownloaded(sfLink)
         if (f.exists()) {
             log.info "sf link ${sfLink} already downloaded"
             return f

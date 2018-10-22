@@ -65,7 +65,7 @@ class EventQueueDebug extends EventQueue {
             } else {
                 String className = data.getClass().getName()
                 switch (className) {
-                    case { className.startsWith(sun.awt.windows.WInputMethod.getName()) }:
+                    case { className.startsWith(winWInputMethodClass.getClassName()) }:
                         InputMethodAdapter imppl2 = (InputMethodAdapter) inputMethod.get(data)
                         Component component3 = (Component) inputMethod2.get(imppl2)
                         break
@@ -86,6 +86,11 @@ class EventQueueDebug extends EventQueue {
         }
 
     }
+
+
+
+    ClRef winWInputMethodClass = new ClRef('sun.awt.windows.WInputMethod')
+    ClRef winWComponentPeerClass = new ClRef('sun.awt.windows.WComponentPeer')
 
     void printEventInfoImpl(AWTEvent theEvent) {
         String eventClassName = theEvent.getClass().getName()
@@ -120,10 +125,10 @@ class EventQueueDebug extends EventQueue {
                     case { className.startsWith(sun.awt.GlobalCursorManager.getName()) }:
                         globalCursorManager.newEvent();
                         break;
-                    case { className.startsWith(sun.awt.windows.WComponentPeer.getName()) }:
+                    case { className.startsWith(winWComponentPeerClass.getClassName()) }:
                         WComponentPeer.newEvent();
                         break;
-                    case { className.startsWith(sun.awt.windows.WInputMethod.getName()) }:
+                    case { className.startsWith(winWInputMethodClass.getClassName()) }:
                         InputMethodAdapter imppl2 = (InputMethodAdapter) inputMethod.get(data)
                         Component component3 = (Component) inputMethod2.get(imppl2)
                         if (component3 == null) {

@@ -25,10 +25,10 @@ class GroovyShellRunnerFromConsole extends GroovyRunnerConfigurator implements C
     @Override
     void doConfig() {
         AddFilesToUrlClassLoaderGroovy adder = gmrp.addFilesToClassLoader
-        addClassthapAndRun(adder)
+        addClassPathAndRun(adder)
     }
 
-    void addClassthapAndRun(AddFilesToUrlClassLoaderGroovy adder) {
+    void addClassPathAndRun(AddFilesToUrlClassLoaderGroovy adder) {
         adder.addAll mavenIds
         RunnableFactory.runRunner cnr
     }

@@ -17,6 +17,8 @@ class InitPlugin {
 
     public static boolean inited = false;
 
+    public static OSIntegrationIdea osIntegrationIdea
+
     static void init() {
         if(inited){
 
@@ -31,7 +33,8 @@ class InitPlugin {
         Log4jConfigurator.setLevelForLogger1(logger.name, Level.DEBUG)
         CompetionContributerRenew.regDocumentation()
         CompetionContributerRenew.regGotto()
-        MBeanFromJavaBean.registerMBean(new OSIntegrationIdea());
+        osIntegrationIdea= new OSIntegrationIdea()
+        MBeanFromJavaBean.registerMBean(osIntegrationIdea);
     }
 
 

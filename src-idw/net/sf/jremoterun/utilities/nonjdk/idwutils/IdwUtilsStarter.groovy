@@ -2,6 +2,7 @@ package net.sf.jremoterun.utilities.nonjdk.idwutils
 
 import groovy.transform.CompileStatic
 import net.infonode.docking.RootWindow
+import net.infonode.docking.properties.RootWindowProperties
 import net.infonode.docking.util.DockingUtil
 import net.infonode.docking.util.ViewMap
 import net.sf.jremoterun.utilities.JrrClassUtils
@@ -18,6 +19,7 @@ class IdwUtilsStarter {
     public static RootWindow rootWindow
     public static IdwPopupMenuFactory idwPopupMenuFactory
     private static CreationInfo creationStack
+    public static RootWindowProperties idwProperties = new RootWindowProperties();
 
     public static RootWindow createRootWindow() {
         if (creationStack != null) {
@@ -31,7 +33,12 @@ class IdwUtilsStarter {
         rootWindow.setPopupMenuFactory(idwPopupMenuFactory)
         IdwUtils.addMaxButton(rootWindow)
 //        SwitchWindows.register()
+        rootWindow.getRootWindowProperties().addSuperObject(idwProperties)
         return rootWindow
+    }
+
+    static void useFrames(boolean useFrames){
+        IdwUtilsStarter.idwProperties.getFloatingWindowProperties().setUseFrame(useFrames)
     }
 
 

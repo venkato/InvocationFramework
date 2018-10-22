@@ -36,7 +36,7 @@ class RstaCoreCompiler  extends GenericCompiler {
             LatestMavenIds.rsyntaxtextarea,
             LatestMavenIds.jodaTime,
             LatestMavenIds.commonsCodec,
-            LatestMavenIds.commonsIo,
+            CustObjMavenIds.commonsIo,
             DropshipClasspath.ivyMavenId,
     ]
 

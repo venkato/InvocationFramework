@@ -51,9 +51,9 @@ abstract class GenericCompiler {
         params.addInDir(files)
     }
 
-    void addInDir(ToFileRefSelf toFileRef){
-        params.addInDir toFileRef.resolveToFile()
-    }
+//    void addInDir(ToFileRefSelf toFileRef){
+//        params.addInDir toFileRef.resolveToFile()
+//    }
 
     void addInDir(ToFileRef2 toFileRef){
         params.addInDir toFileRef.resolveToFile()

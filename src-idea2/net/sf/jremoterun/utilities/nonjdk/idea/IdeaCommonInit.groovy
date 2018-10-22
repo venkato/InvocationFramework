@@ -18,7 +18,7 @@ import java.util.logging.Logger
 
 @CompileStatic
 class IdeaCommonInit implements Runnable {
-
+    //-Dintellij.log.stdout=false
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     static volatile boolean inInit = false;
@@ -73,7 +73,7 @@ class IdeaCommonInit implements Runnable {
         }
 
         GeneralUtils.startLogTimer()
-        JrrClassUtils.ignoreClassesForCurrentClass.add(com.intellij.util.proxy.CommonProxy.name)
+        JrrClassUtils.ignoreClassesForCurrentClass.add(com.intellij.util.proxy.CommonProxy.getName())
         IdeaSetDependencyResolver3.setDepResolver()
         proxyLogLayout.additionalIgnore.addAll(ignoreClasses)
         Log4j2PatternLayout.customLayouts.put(ideaProxyLoggerName, proxyLogLayout)

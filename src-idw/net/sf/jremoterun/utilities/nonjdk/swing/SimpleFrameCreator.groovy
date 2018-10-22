@@ -18,6 +18,12 @@ class SimpleFrameCreator {
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
 
+    static void setIcon(JFrame frame, File  f){
+        assert f.exists()
+        InputStream stream = f.newInputStream();
+        setIcon(frame,stream)
+
+    }
     static void setIcon(JFrame frame, InputStream iconRes){
         assert iconRes!=null
         final BufferedImage image = ImageIO.read(iconRes);
@@ -32,8 +38,8 @@ class SimpleFrameCreator {
         RootWindow window = IdwUtilsStarter.createRootWindow()
         window.setWindow(dockingWindow)
         JFrame frame = SimpleFrameCreator.createAppFrame(windowName)
-        frame.getContentPane().add(window)
-        return frame
+        frame.getContentPane().add(window);
+        return frame;
     }
 
 
@@ -44,7 +50,7 @@ class SimpleFrameCreator {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         frame.setAlwaysOnTop(false);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         return frame;
 

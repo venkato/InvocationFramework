@@ -16,7 +16,7 @@ abstract class Writer6Sub extends Writer5Class {
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     public static String className = 'Config'
-    public static String varName ='b'
+    public static String varName = 'b'
 
     Writer6Sub() {
         addImport(GroovyRunnerConfigurator2)
@@ -24,16 +24,22 @@ abstract class Writer6Sub extends Writer5Class {
         addImport(ClasspathConfigurator)
         addImport(GroovyConfigLoader)
         addImport(AddFilesToClassLoaderGroovy)
-        addImport(getConfigClass())
     }
 
 
     abstract Class getConfigClass();
 
     @Override
-    String getClassDeclarationName() {
-        return "class ${className} extends ${GroovyConfigLoader.simpleName}<${getConfigClass().simpleName}> {".toString()
+    String buildResult() {
+        addImport(getConfigClass())
+        return super.buildResult()
     }
+
+    @Override
+    String getClassDeclarationName() {
+        return "class ${classNameGenerated} extends ${GroovyConfigLoader.simpleName}<${getConfigClass().simpleName}> {".toString()
+    }
+
 
     @Override
     String getMainMethod() {

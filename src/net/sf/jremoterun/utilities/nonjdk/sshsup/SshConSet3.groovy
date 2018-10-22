@@ -1,5 +1,6 @@
 package net.sf.jremoterun.utilities.nonjdk.sshsup
 
+import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.Session
 import com.sshtools.net.SocketTransport
@@ -14,6 +15,9 @@ import com.sshtools.ssh.components.SshKeyPair
 import com.sshtools.ssh2.Ssh2Client
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.nonjdk.sshsup.channels.JrrChannelExec
+import net.sf.jremoterun.utilities.nonjdk.sshsup.channels.JrrChannelSftp
+import net.sf.jremoterun.utilities.nonjdk.sshsup.channels.JschChannelType
 
 import java.util.logging.Logger
 
@@ -23,13 +27,21 @@ abstract class SshConSet3 extends SshConSet2 implements Closeable {
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
 
+
     public SftpUtils sftpUtils
+    public JrrChannelExec channelExec;
 
     void close() {
 //        sftpUtils.close()
         if (sftpUtils != null) {
             sftpUtils.close()
         }
+        if(channelExec!=null){
+            channelExec.disconnect()
+        }
+
+        // close method is not public, why ?
+
     }
 
     abstract Session getJcraftSession();
@@ -56,10 +68,21 @@ abstract class SshConSet3 extends SshConSet2 implements Closeable {
         createJcraftConnection()
         Session session = getJcraftSession();
         assert session != null
-        sftpUtils2.sftp = session.openChannel("sftp") as ChannelSftp
-        sftpUtils2.sftp.connect()
 
+        sftpUtils2.sftp = session.openChannel(JschChannelType.sftp.name()) as JrrChannelSftp
+        sftpUtils2.sftp.connect()
     }
+
+    JrrChannelExec openExecChannel(){
+        if(channelExec==null) {
+            createJcraftConnection()
+            Session session = getJcraftSession();
+            assert session != null
+            channelExec = session.openChannel(JschChannelType.exec.name()) as JrrChannelExec
+        }
+        return channelExec
+    }
+
 
     void createNewSftpConn(SftpUtils sftpUtils2) {
         SocketTransport t = new SocketTransport(host, port);

@@ -24,6 +24,9 @@ class MavenRepoHashToFileMap {
 
 
     void init(LongTaskInfo longTaskInfo){
+        if(longTaskInfo==null){
+            throw new NullPointerException('longTaskInfo is null')
+        }
         Date start = new Date()
 
 

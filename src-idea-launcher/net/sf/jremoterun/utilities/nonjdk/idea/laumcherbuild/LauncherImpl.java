@@ -4,14 +4,14 @@ import java.util.Date;
 
 public class LauncherImpl {
 
-    public static String[] argsP;
-    public static Date startDate = new Date();
-
-
-
     public static void main(String[] args) throws Exception {
-        argsP = args;
-        IdeaBuilderAddGroovyRuntime.f1();
+        IdeaBuildRunnerSettings.argsP = args;
+        try {
+            IdeaBuilderAddGroovyRuntime.f1();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
 

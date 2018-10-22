@@ -3,7 +3,10 @@ package net.sf.jremoterun.utilities.nonjdk.idea.laumcherbuild2
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.nonjdk.PidDetector
+import net.sf.jremoterun.utilities.nonjdk.idea.laumcherbuild.IdeaBuildRunnerSettings
+import net.sf.jremoterun.utilities.nonjdk.idea.laumcherbuild.IdeaBuilderAddGroovyRuntime
 import net.sf.jremoterun.utilities.nonjdk.idea.laumcherbuild.LauncherImpl
+import org.jetbrains.jps.cmdline.LauncherOriginal
 
 import java.lang.management.ManagementFactory
 import java.util.logging.Logger
@@ -12,6 +15,7 @@ import java.util.logging.Logger
 class IdeaBRunner34 implements Runnable {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
+    public static boolean launcherOriginal = true
 
 
     static void f1() {
@@ -24,12 +28,29 @@ class IdeaBRunner34 implements Runnable {
     }
 
     static void f2() {
-        String[] args = LauncherImpl.argsP
+        String[] args = IdeaBuildRunnerSettings.argsP
         int pid = PidDetector.detectPid()
         log.info "running, pid =  ${pid} , ${new Date()}, "
-        log.info "running ${args} "
+        log.info "running args : ${args} "
         List<String> inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments()
         log.info "inputArguments = ${inputArguments}"
+        long delay = System.currentTimeMillis() - IdeaBuildRunnerSettings.startDate.getTime()
+        log.info "startup delay : ${delay / 1000} s"
+        if(IdeaBuildRunnerSettings.beforeMainOriginalRun!=null){
+            IdeaBuildRunnerSettings.beforeMainOriginalRun.run()
+        }
+        if(launcherOriginal){
+            LauncherOriginal.main(args)
+        }else{
+            f3(args)
+        }
+        //IdeaBuildRunnerSettings.afterMainOriginalRun.run()
+
+//        mainMethod.invoke(null, new Object[] {jpsArgs});
+    }
+
+    static void f3( String[] args ){
+        IdeaBuildRunnerSettings.originalTried = true;
         final String jpsClasspath = args[0];
         final String mainClassName = args[1];
         final String[] jpsArgs = new String[args.length - 2];
@@ -54,11 +75,11 @@ class IdeaBRunner34 implements Runnable {
         System.setProperty("io.netty.serviceThreadPrefix", "Netty");
         //}
 
+
         final Class<?> mainClass = jpsLoader.loadClass(mainClassName);
         Thread.currentThread().setContextClassLoader(jpsLoader);
         JrrClassUtils.runMainMethod(mainClass, jpsArgs)
 
-//        mainMethod.invoke(null, new Object[] {jpsArgs});
     }
 
     @Override

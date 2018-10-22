@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 import groovy.transform.CompileStatic;
 
 
+
+// ssh  -o "StrictHostKeyChecking=no" -p port host
 @CompileStatic
 class GroovyShellSshService extends GroovyShellService{
 

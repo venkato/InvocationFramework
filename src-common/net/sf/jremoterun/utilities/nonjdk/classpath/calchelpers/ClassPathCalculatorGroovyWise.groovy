@@ -77,10 +77,10 @@ class ClassPathCalculatorGroovyWise extends ClassPathCalculatorGitRefSup {
             if (fileInMaven == null) {
                 return mavenId
             }
-            String shainMaven = calcSha1ForFile(fileInMaven)
+            String shaInMaven = calcSha1ForFile(fileInMaven)
 
-            if (shainFile != shainMaven) {
-                onDifferentHashInFileAndInMavenFile(jarFile, fileInMaven, mavenId, shainFile, shainMaven)
+            if (shainFile != shaInMaven) {
+                onDifferentHashInFileAndInMavenFile(jarFile, fileInMaven, mavenId, shainFile, shaInMaven)
                 return null
             }
 

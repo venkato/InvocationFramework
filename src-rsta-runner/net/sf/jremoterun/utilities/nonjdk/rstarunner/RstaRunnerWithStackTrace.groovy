@@ -16,13 +16,12 @@ class RstaRunnerWithStackTrace extends RstaRunner {
 
     StackTraceTextArea textAreaStackTrace = new StackTraceTextArea()
 
-    List<String> ignoreClasses = ['java.awt', 'javax.swing','groovy.lang.Closure.'];
+    List<String> ignoreClasses = ['java.awt', 'javax.swing', 'groovy.lang.Closure.'];
 
-    JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,panel,textAreaStackTrace.scrollPane
-    )
+    JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel, textAreaStackTrace.scrollPane);
 
     RstaRunnerWithStackTrace(File file) {
-        super(file)
+        super(checkFileExist2(file));
         init3()
     }
 
@@ -38,24 +37,23 @@ class RstaRunnerWithStackTrace extends RstaRunner {
         ignoreClasses.addAll(JrrClassUtils.ignoreClassesForCurrentClass)
         textAreaStackTrace.textArea.setColumns(20)
         splitPane.setDividerLocation(1.0d)
-        SwingUtilities.invokeLater{
+        SwingUtilities.invokeLater {
             splitPane.setDividerLocation(1.0d)
         }
     }
 
     @Override
-    Component getMainPanel(){
+    Component getMainPanel() {
         return splitPane
     }
 
     @Override
     void additionalHilighter() {
-        super.additionalHilighter()
         showSTackTrace()
     }
 
     void showSTackTrace() {
-        Thread codeThread2 = codeThread
+        Thread codeThread2 = textAreaRunner.codeThread
         if (codeThread2 == null) {
             log.info("thread value is null");
         } else {
@@ -66,16 +64,15 @@ class RstaRunnerWithStackTrace extends RstaRunner {
             }
             String text3 = stackTraces.join('\n');
             SwingUtilities.invokeLater {
-                textAreaStackTrace.textArea.text =text3
+                textAreaStackTrace.textArea.text = text3
             }
         }
     }
 
     @Override
     void codeStopped() {
-        super.codeStopped()
         SwingUtilities.invokeLater {
-            textAreaStackTrace.textArea.text =""
+            textAreaStackTrace.textArea.text = ""
         }
     }
 }

@@ -46,8 +46,12 @@ public class ClassRedefintions {
         Class clazz = java.lang.Package
         final CtClass cc = JrrJavassistUtils.getClassFromDefaultPool(clazz);
         if (true) {
-            CtBehavior method1 = JrrJavassistUtils.findMethod(clazz, cc, "isSealed", 1);
-            method1.setBody("{return false;}");
+            try {
+                CtBehavior method1 = JrrJavassistUtils.findMethod(clazz, cc, "isSealed", 1);
+                method1.setBody("{return false;}");
+            }catch(NoSuchMethodException e){
+                log.info( "failed find isSealed method with 1 param ",e)
+            }
         }
         if (true) {
             CtBehavior method1 = JrrJavassistUtils.findMethod(clazz, cc, "isSealed", 0);
@@ -112,6 +116,17 @@ public class ClassRedefintions {
         Class class1 = cr.loadClass(JrrUtilities.getCurrentClassLoader());
         final CtClass cc = getClassFromDefaultPool(class1);
         final CtMethod method = cc.getDeclaredMethod("checkURLSpoofing");
+        method.setBody("{}");
+        JrrJavassistUtils.redefineClass(cc, class1);
+    }
+
+
+    static void redefineSslHandshaker() throws Exception {
+        init();
+        ClRef cr = new ClRef('sun.security.ssl.Handshaker')
+        Class class1 = cr.loadClass(JrrUtilities.getCurrentClassLoader());
+        final CtClass cc = getClassFromDefaultPool(class1);
+        final CtMethod method = JrrJavassistUtils.findMethod(cc,'fatalSE',3)
         method.setBody("{}");
         JrrJavassistUtils.redefineClass(cc, class1);
     }

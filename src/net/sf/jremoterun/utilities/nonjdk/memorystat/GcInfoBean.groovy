@@ -9,15 +9,16 @@ import groovy.transform.CompileStatic;
 
 @CompileStatic
 class GcInfoBean {
-
-    private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
+    // implements Serializable
+    // can't be ser due to GarbageCollectorMXBean not ser
 
     public String gcName;
     public Date lastRun;
-    public long gcId;
     public long gcDuration;
     public com.sun.management.GarbageCollectorMXBean bean;
-    List<MemoryInstanceInfoGG> infoGG = []
 
-
+    @Override
+    String toString() {
+        return gcName
+    }
 }

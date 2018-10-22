@@ -3,6 +3,8 @@ package net.sf.jremoterun.utilities.nonjdk.idea.set2
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
+import net.sf.jremoterun.utilities.classpath.ToFileRef2
+import net.sf.jremoterun.utilities.nonjdk.BaseDirSetting
 import net.sf.jremoterun.utilities.nonjdk.classpath.sl.GroovySettingsLoader
 
 import java.util.logging.Level
@@ -15,17 +17,19 @@ class SettingsRef {
 
     public static IdeaLibManagerConfig config = new IdeaLibManagerConfig();
 
-    public static File location = (System.getProperty('user.home') + '/jrr/idea/libmanager.groovy') as File
+    public
+    static ToFileRef2 location = BaseDirSetting.baseDirSetting.childL("idea/libmanager.groovy")
 
-    public static File locationEdit = (System.getProperty('user.home') + '/jrr/idea/libmanager_edit.groovy') as File
+    public
+    static ToFileRef2 locationEdit = BaseDirSetting.baseDirSetting.childL("idea/libmanager_edit.groovy");
 
 
 
 
     static void loadSettingsS2() {
         try {
-            if (location.exists()) {
-                SettingsRef.loadSettingsS(location)
+            if (location.resolveToFile().exists()) {
+                SettingsRef.loadSettingsS(location.resolveToFile())
             }
         } catch (Throwable e) {
             log.log(Level.SEVERE, "failed load config", e)

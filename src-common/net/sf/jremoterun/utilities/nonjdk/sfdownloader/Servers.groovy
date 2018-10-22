@@ -2,6 +2,7 @@ package net.sf.jremoterun.utilities.nonjdk.sfdownloader
 
 /**
  * https://sourceforge.net/p/forge/documentation/Mirrors/
+ * FIXME: issue with cert for all.
  */
 enum Servers {
 
@@ -26,6 +27,9 @@ enum Servers {
     ufpr('Curitiba, Brazil'),
     versaweb('Las Vegas, NV'),
     vorboss('London, United Kingdom'),
+
+
+
     ;
 
     String description

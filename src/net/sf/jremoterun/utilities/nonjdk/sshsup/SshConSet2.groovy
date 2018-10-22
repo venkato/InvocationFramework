@@ -12,9 +12,10 @@ class SshConSet2 {
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
 //    public static SshConSet2 defaultSet = new SshConSet2();
-
+    public boolean showMessage = true
 
     public static int defaultPort = 22;
+    public static int maxRetry = 22;
     public static String defaultPassword;
     public static String defaultUser = SystemUtils.USER_NAME;
     public static File defaultSshKey = new File(SystemUtils.USER_HOME + "/.ssh/id_rsa");

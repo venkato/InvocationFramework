@@ -5,6 +5,7 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.AddFilesToUrlClassLoaderGroovy
 import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.groovystarter.GroovyMethodRunnerParams
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.CustObjMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import net.sf.jremoterun.utilities.nonjdk.compile.GenericCompiler
 import net.sf.jremoterun.utilities.nonjdk.compiler3.GroovyCompiler
@@ -44,8 +45,8 @@ class ConsoleCompiler implements Runnable{
         }
         genericCompiler.params.outputDir = outDir
         AddFilesToUrlClassLoaderGroovy adder = genericCompiler.client.adder
-        adder.add LatestMavenIds.eclipseJavaCompiler
-        adder.add LatestMavenIds.eclipseJavaAstParser
+        adder.add CustObjMavenIds.eclipseJavaCompiler
+        adder.add CustObjMavenIds.eclipseJavaAstParser
         adder.addFilesFromGmrp()
         genericCompiler.compile()
         inDirs.each {

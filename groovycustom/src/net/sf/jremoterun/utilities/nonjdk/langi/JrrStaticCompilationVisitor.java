@@ -20,11 +20,7 @@ import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.sc.StaticCompilationVisitor;
 import org.codehaus.groovy.transform.stc.Receiver;
 
-import java.util.Collection;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 @CompileStatic
@@ -82,11 +78,14 @@ public class JrrStaticCompilationVisitor extends StaticCompilationVisitor {
         }
         super.visitBlockStatement(block);
         if (block != null) {
-            visitClosingBlock(block);
+            visitClosingBlockJrr(block);
         }
     }
 
-    public void visitClosingBlock(BlockStatement block) {
+    public void visitClosingBlockJrr(BlockStatement block) {
+        if(enclosingBlocks.size()==0){
+            throw new NoSuchElementException("collection is empty");
+        }
         BlockStatement first = enclosingBlocks.removeFirst();
         boolean found = blockStatements2Types.containsKey(first);
         if (found) {

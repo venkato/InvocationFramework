@@ -56,7 +56,7 @@ class TrolCommanderCompilerAux {
             , LatestMavenIds.commonsCollection
             , LatestMavenIds.commonsCollection4
             , LatestMavenIds.commonsConfig
-            , LatestMavenIds.commonsIo
+            , CustObjMavenIds.commonsIo
             , CustObjMavenIds.commnonsLang
             , CustObjMavenIds.commonsLoggingMavenId
             , LatestMavenIds.httpClient

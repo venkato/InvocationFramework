@@ -3,9 +3,7 @@ package idea.plugins.thirdparty.filecompletion.jrr.a.file.sample;
 import java.io.File;
 import java.nio.charset.Charset;
 
-/**
- * Created by nick on 04.03.2017.
- */
+
 public class SampleJava {
 
    public static File f = new File("c:/a/");
@@ -16,5 +14,6 @@ public class SampleJava {
         f.toString();
         new File(SampleGroovy.file1, ".gitignore");
         new File(f, ".gitignore");
+        new File(SampleEnum.a1.f, ".gitignore");
     }
 }

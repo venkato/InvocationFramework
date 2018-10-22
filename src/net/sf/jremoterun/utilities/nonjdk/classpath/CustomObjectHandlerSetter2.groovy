@@ -6,6 +6,9 @@ import net.sf.jremoterun.utilities.classpath.AddFilesToClassLoaderCommon
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.javassist.codeinjector.InjectedCode
+import net.sf.jremoterun.utilities.nonjdk.IfFrameworkSrcDirs
+import net.sf.jremoterun.utilities.nonjdk.InfocationFrameworkStructure
+import net.sf.jremoterun.utilities.nonjdk.JavaVersionChecker
 
 import java.util.logging.Logger
 
@@ -24,9 +27,10 @@ class CustomObjectHandlerSetter2 extends InjectedCode {
 
     static void addSupport(File gitBase) {
         if (MavenDefaultSettings.mavenDefaultSettings.customObjectHandler == null) {
-
+            JavaVersionChecker.checkJavaVersion();
             CustomObjectHandlerImpl s = new CustomObjectHandlerImpl(gitBase)
             MavenDefaultSettings.mavenDefaultSettings.customObjectHandler = s
+
         } else {
             log.info "customObjectHandler already set : ${MavenDefaultSettings.mavenDefaultSettings.customObjectHandler}"
         }

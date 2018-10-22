@@ -30,12 +30,6 @@ public class AdminPage2 extends RstaRunner {
 
     }
 
-    @Override
-    public void runCode() {
-//        getParams().put("tabWindow", (TabWindow) defaultView
-//                .getWindowParent());
-        super.runCode();
-    }
 
 
 }

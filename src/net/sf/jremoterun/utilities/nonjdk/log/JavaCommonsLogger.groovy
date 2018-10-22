@@ -10,12 +10,17 @@ import org.apache.commons.logging.impl.LogFactoryImpl
 public class JavaCommonsLogger {
 
 
-    public
+
     static void setCommonsLoggerToLog4j2() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         LogFactory.releaseAll();
         org.apache.logging.log4j.jcl.LogFactoryImpl log4jLoggerLogFactory = new org.apache.logging.log4j.jcl.LogFactoryImpl();
-        Log instance = log4jLoggerLogFactory.getInstance("test");
-        JrrClassUtils.setFieldValue(LogFactory.class, "nullClassLoaderFactory", log4jLoggerLogFactory);
+        setCommonsLoggerTo(log4jLoggerLogFactory)
+    }
+
+    static void setCommonsLoggerTo(LogFactory logFactory) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        LogFactory.releaseAll();
+        Log instance = logFactory.getInstance("test");
+        JrrClassUtils.setFieldValue(LogFactory, "nullClassLoaderFactory", logFactory);
     }
 
     static setLoggerProps() {

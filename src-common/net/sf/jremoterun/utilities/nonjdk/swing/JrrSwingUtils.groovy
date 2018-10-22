@@ -8,6 +8,7 @@ import net.sf.jremoterun.utilities.ObjectWrapper
 
 import javax.swing.*
 import java.awt.Component
+import java.awt.Window
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.util.concurrent.Callable
@@ -19,6 +20,17 @@ class JrrSwingUtils {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
+
+    static void moveAllVisibleWindowToLeftUpperCorner() {
+        moveAllVisibleWindowTo(10, 10);
+    }
+
+    static void moveAllVisibleWindowTo(int x, int y) {
+        invokeNowOrLaterInSwingThread {
+            Collection<Window> windows = JrrUtilities.findVisibleAwtWindows();
+            windows.each { it.setLocation(x, y) }
+        }
+    }
 
     static void invokeAndWaitInSwingThread(Callable callable) {
         if (SwingUtilities.isEventDispatchThread()) {
@@ -41,6 +53,7 @@ class JrrSwingUtils {
 
 
     static void invokeNowOrLaterInSwingThread(Callable callable) {
+        assert callable != null
         if (SwingUtilities.isEventDispatchThread()) {
             callable.call()
         } else {
@@ -48,9 +61,13 @@ class JrrSwingUtils {
             SwingUtilities.invokeLater {
                 try {
                     callable.call()
-                }catch (Exception e){
+                } catch (Throwable e) {
 //                    def string = JrrUtils.exceptionToString(stackTrace)
-                    log.log(Level.SEVERE,"fail call invoke later", e);
+                    log.log(Level.SEVERE, "fail call invoke later : ${callable.getClass().getName()}", e);
+                    StackTraceElement[] trace = e.getStackTrace()
+                    if (trace == null || trace.length == 0) {
+                        log.severe("empty exception stack : ${e} ${callable.getClass().getName()}")
+                    }
                 }
             };
         }
@@ -71,7 +88,6 @@ class JrrSwingUtils {
 
         );
     }
-
 
 
 }

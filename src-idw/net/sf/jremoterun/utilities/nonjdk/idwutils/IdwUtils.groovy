@@ -102,6 +102,9 @@ class IdwUtils {
             return getDockerWindowWithPopmenu(popupMenu);
         }
         Container parent = component.getParent();
+        if(parent==null){
+            throw new Exception("No parent for ${component.getClass()} ${component}")
+        }
         if (parent instanceof DockingWindow) {
             DockingWindow new_name = (DockingWindow) parent;
             return new_name;

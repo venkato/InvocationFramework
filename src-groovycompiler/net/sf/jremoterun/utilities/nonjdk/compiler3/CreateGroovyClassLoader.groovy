@@ -19,9 +19,9 @@ class CreateGroovyClassLoader {
     }
 
     static URLClassLoader createGroovyClassLoader2(ClassLoader urlClassLoader) {
-        URLClassLoader urlClassLoader2 = urlClassLoader.loadClass(GroovyClassLoader.name).newInstance(urlClassLoader) as URLClassLoader;
-        assert urlClassLoader2.class.name == GroovyClassLoader.name
-        assert !urlClassLoader2.class.is(GroovyClassLoader)
+        URLClassLoader urlClassLoader2 = urlClassLoader.loadClass(GroovyClassLoader.getName()).newInstance(urlClassLoader) as URLClassLoader;
+        assert urlClassLoader2.getClass().getName() == GroovyClassLoader.getName()
+        assert !urlClassLoader2.getClass().is(GroovyClassLoader)
         return urlClassLoader2
 
     }
@@ -40,7 +40,7 @@ class CreateGroovyClassLoader {
         if (loader == null) {
             return null
         }
-        if (loader.class.name == 'sun.misc.Launcher$ExtClassLoader') {
+        if (loader.getClass().getName() == 'sun.misc.Launcher$ExtClassLoader') {
             return loader as URLClassLoader
         }
         return findExtClassLoaderImpl(loader.parent);

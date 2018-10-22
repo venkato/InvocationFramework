@@ -1,7 +1,6 @@
 package net.sf.jremoterun.utilities.nonjdk.classpath.refs;
 
 import net.sf.jremoterun.utilities.JrrClassUtils
-import net.sf.jremoterun.utilities.nonjdk.git.SvnRef
 import net.sf.jremoterun.utilities.nonjdk.git.SvnSpec;
 
 import java.util.logging.Logger;

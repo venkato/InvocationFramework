@@ -7,6 +7,7 @@ import net.sf.jremoterun.utilities.groovystarter.ClassNameSynonym
 import net.sf.jremoterun.utilities.groovystarter.GroovyMethodRunnerParams
 import net.sf.jremoterun.utilities.nonjdk.classpath.CustomObjectHandlerImpl
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JrrStarterJarRefs
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JrrStarterJarRefs2
 import net.sf.jremoterun.utilities.nonjdk.compile.IdeaInitPluginCompiler
 import net.sf.jremoterun.utilities.nonjdk.compile.IdeaPluginCompiler
 import net.sf.jremoterun.utilities.nonjdk.compile.JrrUtilsCompiler
@@ -37,8 +38,8 @@ class JrrIdeaGenerator implements ClassNameSynonym {
         File pluginDir2 = compiler.client.ifDir.child("build/${pluginName}")
         File pluginDir = pluginDir2.child("lib")
         pluginDir.mkdirs()
-        FileUtils.copyFileToDirectory(JrrStarterJarRefs.jremoterun.resolveToFile(), pluginDir)
-        FileUtils.copyFileToDirectory(JrrStarterJarRefs.jrrassist.resolveToFile(), pluginDir)
+        FileUtils.copyFileToDirectory(JrrStarterJarRefs2.jremoterun.resolveToFile(), pluginDir)
+        FileUtils.copyFileToDirectory(JrrStarterJarRefs2.jrrassist.resolveToFile(), pluginDir)
         FileUtils.copyFileToDirectory(IdeaInitPluginCompiler.getJrrUtilsJar(), pluginDir)
         File pluginJar = pluginDir.child("${pluginName}.jar")
         File metaInf = compiler.client.ifDir.child('resources/idea/META-INF')
