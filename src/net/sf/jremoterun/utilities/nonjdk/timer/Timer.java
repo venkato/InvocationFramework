@@ -26,6 +26,9 @@ public class Timer {
 
 	private volatile long lastRunBefore = -1;
 
+	public static long notImportantTimeDiffInMS = 30000;
+	public static long timeDiffForHebirnateRecheck = 1000 * 60 * 5;
+
 	// public static volatile boolean catchDebug = false;
 	public static Runnable debugWaitNextRun;
 
@@ -57,7 +60,8 @@ public class Timer {
 
 	// private boolean timerRunning = false;
 
-	private final Object wakeUpLock = new Object();
+//	private final Object wakeUpLock = new Object();
+	private final WaitNotifyMethods2 wakeUpLock = new WaitNotifyMethods2();
 
 	// protected final Object lock = new Object();
 
@@ -93,6 +97,20 @@ public class Timer {
 		}
 	}
 
+
+	private Date nextFireDateDebug;
+
+
+	/**
+	 * Only in debug purpose, as nextFireTime can be changed : <ul>
+	 * <li>user may ask run earlier
+	 * <li>computer can go to hibernate
+	 * </ul>
+	 */
+	public Date getNextFireTimeDebug() {
+		return nextFireDateDebug;
+	}
+
 	public Date getStartDate() {
 		return startDate;
 	}
@@ -102,6 +120,8 @@ public class Timer {
 		setLastRunTime(System.currentTimeMillis());
 		reEvauateNextRun();
 	}
+
+	public volatile Date debugLastTimeStartedWait;
 
 	protected void waitNextRun() throws InterruptedException {
 		Date nextFireDate2 = controller.isRunNow();
@@ -121,12 +141,13 @@ public class Timer {
 						return;
 					}
 				}
+				nextFireDateDebug = nextFireDate2;
 				reevalute = false;
 				try {
 					// boolean doNewThisMethod = false;
 					final long currcentTime;
 					final long waitTime;
-					synchronized (wakeUpLock) {
+					synchronized (wakeUpLock.lock) {
 						currcentTime = System.currentTimeMillis();
 						waitTime = nextFireDate3 - currcentTime;
 						inSleep = true;
@@ -138,7 +159,8 @@ public class Timer {
 							if (debugWaitNextRun != null) {
 								debugWaitNextRun.run();
 							}
-							WaitNotifyMethods.wait(wakeUpLock, waitTime);
+							debugLastTimeStartedWait = new Date();
+							wakeUpLock.wait2(waitTime);
 							// if (catchDebug) {
 							// log.info(getController().toString());
 							// }
@@ -153,13 +175,17 @@ public class Timer {
 						}
 						inSleep = false;
 					}
-					if (waitTime > 1000 * 60 * 5) {
+					if (waitTime > timeDiffForHebirnateRecheck) {
 						long nowAfterWait = System.currentTimeMillis();
-						if (Math.abs(nowAfterWait - nextFireDate3) > 1000) {
+						if (Math.abs(nowAfterWait - nextFireDate3) > notImportantTimeDiffInMS) {
 							// may be caused by hibernate event
-							notifyMissingTimeEvent(nextFireDate2);
-							waitNextRun();
-							return;
+							boolean needRun2 =  notifyMissingTimeEvent(nextFireDate2);
+							if(needRun2){
+
+							}else {
+								waitNextRun();
+								return;
+							}
 						}
 					}
 					if (reevalute) {
@@ -200,10 +226,10 @@ public class Timer {
 			if (waitingThread == null) {
 				return false;
 			}
-			synchronized (wakeUpLock) {
+			synchronized (wakeUpLock.lock) {
 				if ((waitingThread != null) && inSleep) {
 					reevalute = true;
-					WaitNotifyMethods.notify(wakeUpLock);
+					wakeUpLock.notify2();
 					return true;
 				}
 			}
@@ -274,8 +300,11 @@ public class Timer {
 		return new Date(lastRun);
 	}
 
-	public void notifyMissingTimeEvent(Date date) {
+	public static boolean runTaskIfMissesTime = true;
+
+	protected boolean notifyMissingTimeEvent(Date date) {
 		log.info("missing fire date: " + date);
+		return runTaskIfMissesTime;
 	}
 
 	public void setLastRun(Date lastRun) {

@@ -20,16 +20,22 @@ class MavenSearch {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
-    static JsonSlurper slurper = new JsonSlurper()
+    public static JsonSlurper slurper = new JsonSlurper()
+    public static String mavenSearchSite = 'https://search.maven.org/solrsearch'
 
-    static List<String> findMavenIdsAndDownload7(File file) {
+    public static String quote ='%22'
+    public static String space ='%20'
+    public int maxResultCountDefault = 100
+    String defaultAndQuery = """  AND p:"jar"    """.trim()
+
+    List<String> findMavenIdsAndDownload7(File file) {
         String hash = ClassPathCalculatorGroovyWithDownloadWise.calcSha1ForFile(file);
         return findMavenIdsAndDownload6(file, hash)
     }
 
-    static List<String> findMavenIdsAndDownload6(File file, String hex) {
-        URL url = new URL("http://search.maven.org/solrsearch/select?q=1:%22${hex}%22&rows=3&wt=json")
-        Object result = slurper.parse(url)
+    List<String> findMavenIdsAndDownload6(File file, String hex) {
+        URL url = new URL("${mavenSearchSite}/select?q=1:${quote}${hex}${quote}&rows=3&wt=json")
+        Map result = slurper.parse(url) as Map
         if (result == null) {
             throw new IllegalStateException("empty reply for ${file} ${hex}")
         }
@@ -38,34 +44,55 @@ class MavenSearch {
         return response
     }
 
+    static String convertQueryToUrl(String query){
+        query =  query.replace(' ',space)
+        query =  query.replace('"',quote)
+        return query
+    }
 
-    static List<MavenId> findMavenIdsAllArtifactsWithGroupId(String groupId, int maxResultCount) {
+
+
+
+    Map findMavenIdsAllArtifactsWithGroupIdRaw(String groupId, int maxResultCount) {
         assert !groupId.contains(':')
         String groupId2 = URLEncoder.encode(groupId, "UTF8")
-        URL url = new URL("http://search.maven.org/solrsearch/select?q=g:%22${groupId2}%22&rows=${maxResultCount}&wt=json")
-        java.lang.Object result = slurper.parse(url)
-        assert result != null: url
-        List<MavenId> response = MavenResponseParser.parseAllWithGroupLatestResponse(result);
+        String searchByGroupQuery = """  "${groupId2}" ${defaultAndQuery}    """.trim()
+        searchByGroupQuery =  convertQueryToUrl(searchByGroupQuery)
+        String fullQuery = "${mavenSearchSite}/select?q=g:${searchByGroupQuery}&rows=${maxResultCount}&wt=json"
+        log.info "running : ${fullQuery} .."
+        URL url = new URL(fullQuery)
+        Map result = slurper.parse(url) as Map
+        return result;
+    }
+
+    List<MavenId> findMavenIdsAllArtifactsWithGroupId(String groupId, int maxResultCount) {
+        Map raw = findMavenIdsAllArtifactsWithGroupIdRaw(groupId, maxResultCount)
+        List<MavenId> response = MavenResponseParser.parseAllWithGroupLatestResponse(raw);
         return response;
-
     }
 
-    static List<MavenId> findMavenIdsAllArtifactsWithGroupId(String groupId) {
-        return findMavenIdsAllArtifactsWithGroupId(groupId, 30)
+    List<MavenId> findMavenIdsWithGroupIdAndHasJar(String groupId, int maxResultCount) {
+        Map raw = findMavenIdsAllArtifactsWithGroupIdRaw(groupId, maxResultCount)
+        List<MavenId> response = new MavenResponseParser().parseAllWithGroupLatestResponse2(raw);
+        return response;
     }
 
-    static void findNonEmptyMavenIdsAllArtifactsWithGroupId(AddFilesToClassLoaderCommon adder, String groupId) {
+
+    List<MavenId> findMavenIdsAllArtifactsWithGroupId(String groupId) {
+        return findMavenIdsAllArtifactsWithGroupId(groupId, maxResultCountDefault)
+    }
+
+     void findNonEmptyMavenIdsAllArtifactsWithGroupId(AddFilesToClassLoaderCommon adder, String groupId) {
         List<MavenId> mavenIds = findMavenIdsAllArtifactsWithGroupId(groupId)
         MavenDependenciesResolver dependenciesResolver = MavenDefaultSettings.mavenDefaultSettings.mavenDependenciesResolver
         mavenIds = mavenIds.findAll {
             dependenciesResolver.resolveAndDownloadDeepDependencies(it, false, true).find { MavenId m -> adder.mavenCommonUtils.findMavenOrGradle(m) != null } != null
         }
         adder.addAllWithDeps mavenIds
-
     }
 
 
-    static void findMavenIdsAndDownload1(File groovyFile) {
+    void findMavenIdsAndDownload1(File groovyFile) {
         LongTaskInfo longTaskInfo = new LongTaskInfo()
         ClassPathCalculatorGroovyWise calculatorGroovyWise = new ClassPathCalculatorGroovyWise(longTaskInfo)
         calculatorGroovyWise.calcMavenCache()
@@ -77,7 +104,7 @@ class MavenSearch {
         findMavenIdsAndDownload3(files, longTaskInfo)
     }
 
-    static void findMavenIdsAndDownload3(List<File> files, LongTaskInfo longTaskInfo) {
+    void findMavenIdsAndDownload3(List<File> files, LongTaskInfo longTaskInfo) {
         FindMavenIdsAndDownload d = new FindMavenIdsAndDownload()
 
         files.each {

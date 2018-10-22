@@ -1,38 +1,113 @@
 package net.sf.jremoterun.utilities.nonjdk.idea.laumcherbuild;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import org.jetbrains.jps.cmdline.LauncherOriginal;
+
+import java.io.*;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Date;
 import java.util.logging.Logger;
 
 public class IdeaBuilderAddGroovyRuntime {
 
     private static final Logger log = Logger.getLogger(IdeaBuilderAddGroovyRuntime.class.getName());
 
-//    static File jrrPathDefault = new File("c:/Users/nick/git/starter");
 
-    public static URLClassLoader groovyCl;
+    public static void f1() throws Exception {
+        try {
+            if(IdeaBuildRunnerSettings.redirectOutToFileAux){
+                doRedirect();
+            }
+            if(IdeaBuildRunnerSettings.jrrIdeaForceUseStd){
+                log.info("force use LauncherOriginal");
+                runOriginal();
+            }else {
+                doJobImpl();
+            }
+        }catch (Throwable e){
+            e.printStackTrace();
+            if(IdeaBuildRunnerSettings.startOriginal){
+                if(IdeaBuildRunnerSettings.originalTried){
+                    throw e;
+                }
+                runOriginal();
+            }
+        }
+    }
 
-    static void f1() throws Exception {
+
+    public static void doRedirect() throws Exception {
+
+        //FileOutputStream fous = new FileOutputStream(jrrlibpath);
+        PrintStream printStream1= new PrintStream(IdeaBuildRunnerSettings.buildLogBefore);
+        IdeaBuildRunnerSettings.jrrOutStream = printStream1;
+        System.setOut(printStream1);
+        System.setErr(printStream1);
+        System.out.println("starting "+new Date());
+    }
+
+    public static void doJobImpl() throws Exception {
         log.info("starting ...");
-        String jrrpath = System.getProperty("jrrpath");
-        log.info("jrrpath = " + jrrpath);
-        if (jrrpath == null) {
+        IdeaBuildRunnerSettings.jrrpathF = detectJrrPath();
+        log.info("jrrpath = " + IdeaBuildRunnerSettings.jrrpathF);
+        if (IdeaBuildRunnerSettings.jrrpathF == null) {
             log.severe("jrrpath is null ");
-            throw new Exception("jrrpath is null ");
-        }
+            if(IdeaBuildRunnerSettings.startOriginal){
+                runOriginal();
+            }else {
+                throw new Exception("jrrpath is null ");
+            }
+        }else {
 //        jrrpath = jrrPathDefault.getAbsolutePath();
-        File f = new File(jrrpath);
-        if (!f.exists()) {
-            throw new FileNotFoundException(f.getAbsolutePath());
+            if (!IdeaBuildRunnerSettings.jrrpathF.exists()) {
+                throw new FileNotFoundException(IdeaBuildRunnerSettings.jrrpathF.getAbsolutePath());
+            }
+            log.info("cp3");
+            f2(IdeaBuildRunnerSettings.jrrpathF);
+            log.info("finished fine");
         }
-        log.info("cp3");
-        f2(f);
-        log.info("finished fine");
+    }
 
+    static void runOriginal() throws MalformedURLException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
+        LauncherOriginal.main(IdeaBuildRunnerSettings.argsPv2.toArray(new String[0]));
+    }
+
+    public static File detectJrrPath() throws Exception {
+        String jrrpath = System.getProperty(IdeaBuildRunnerSettings.jrrpathS);
+        log.info("jrrpath sys prop = " + jrrpath);
+        if(jrrpath!=null){
+            File f = new File(jrrpath);
+            if(!f.exists()){
+                throw new FileNotFoundException(f.getAbsolutePath());
+            }
+            return f;
+        }
+        boolean jrrlibpathE = IdeaBuildRunnerSettings.jrrlibpathF.exists();
+        log.info("jrrlibpath exit : "+jrrlibpathE+" "+IdeaBuildRunnerSettings.jrrlibpathF);
+        if(jrrlibpathE){
+            FileInputStream fis = new FileInputStream(IdeaBuildRunnerSettings.jrrlibpathF);
+            try{
+                byte[] buff= new byte[10000];
+                int read = fis.read(buff);
+                if(read<2){
+                    throw new IOException("Failed read : "+IdeaBuildRunnerSettings.jrrlibpathF.getAbsolutePath());
+                }
+                String pathFromFileS = new String(buff, 0, read).trim();
+                log.info("jrr path from file : "+pathFromFileS);
+                File jrrLibPath2 = new File(pathFromFileS);
+                if(!jrrLibPath2.exists()){
+                    throw new FileNotFoundException(jrrLibPath2.getAbsolutePath());
+                }
+                return jrrLibPath2;
+            }finally {
+                fis.close();
+            }
+        }
+        return null;
     }
 
     static void f2(File jrrpath) throws Exception {
@@ -45,27 +120,27 @@ public class IdeaBuilderAddGroovyRuntime {
         log.info("creating groovy cl");
         Class<?> aClass = classLoader.loadClass("groovy.lang.GroovyClassLoader");
         Constructor<?> constructor = aClass.getConstructor(ClassLoader.class);
-        groovyCl = (URLClassLoader) constructor.newInstance(classLoader);
+        IdeaBuildRunnerSettings.groovyCl = (URLClassLoader) constructor.newInstance(classLoader);
 
-        addUrlToCl(groovyCl, new File(copyDir, "jremoterun.jar"));
-        addUrlToCl(groovyCl, new File(copyDir, "jrrassist.jar"));
-        addUrlToCl(groovyCl, new File(jrrpath, "JrrInit/src"));
-        if (true) {
-            addUrlToCl(groovyCl, new File(jrrpath, "onejar/jrrutilities.jar "));
+        addUrlToCl(IdeaBuildRunnerSettings.groovyCl, new File(copyDir, "jremoterun.jar"));
+        addUrlToCl(IdeaBuildRunnerSettings.groovyCl, new File(copyDir, "jrrassist.jar"));
+        addUrlToCl(IdeaBuildRunnerSettings.groovyCl, new File(jrrpath, "JrrInit/src"));
+        if (IdeaBuildRunnerSettings.useOneJar) {
+            addUrlToCl(IdeaBuildRunnerSettings.groovyCl, new File(jrrpath, "onejar/jrrutilities.jar"));
         } else {
-            addUrlToCl(groovyCl, new File(jrrpath, "JrrUtilities/src"));
-            addUrlToCl(groovyCl, new File(jrrpath, "JrrStarter/src"));
+            addUrlToCl(IdeaBuildRunnerSettings.groovyCl, new File(jrrpath, "JrrUtilities/src"));
+            addUrlToCl(IdeaBuildRunnerSettings.groovyCl, new File(jrrpath, "JrrStarter/src"));
         }
         log.info("jars added to groovy cl");
-        Thread.currentThread().setContextClassLoader(groovyCl);
-        Class<?> aClass1 = groovyCl.loadClass("net.sf.jremoterun.utilities.nonjdk.idea.laumcherbuild.IdeaBRunnerImpl");
+        Thread.currentThread().setContextClassLoader(IdeaBuildRunnerSettings.groovyCl);
+        Class<?> aClass1 = IdeaBuildRunnerSettings.groovyCl.loadClass("net.sf.jremoterun.utilities.nonjdk.idea.laumcherbuild.IdeaBRunnerImpl");
         Runnable o = (Runnable) aClass1.newInstance();
         log.info("running " + aClass1);
         o.run();
     }
 
 
-    static Method addUrlM;
+    public static Method addUrlM;
 
     static void addUrlToCl(URLClassLoader cl, File jrrpath) throws Exception {
         log.info("adding to CL : " + jrrpath);

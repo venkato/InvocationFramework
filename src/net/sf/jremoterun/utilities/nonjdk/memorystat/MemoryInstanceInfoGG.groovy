@@ -9,8 +9,9 @@ import groovy.transform.CompileStatic;
 
 @CompileStatic
 class MemoryInstanceInfoGG {
+    // can't be ser due to MemoryUsage not ser
 
-    private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
+
     String name;
     MemoryUsage before;
     MemoryUsage after;

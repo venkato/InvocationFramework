@@ -10,6 +10,7 @@ import net.sf.jremoterun.utilities.nonjdk.store.ListStore
 import org.apache.commons.io.FileUtils
 import org.zeroturnaround.zip.ZipUtil
 
+import java.text.SimpleDateFormat
 import java.util.logging.Logger
 
 @EqualsAndHashCode
@@ -37,7 +38,7 @@ class Pack {
     static String infoFile = 'info.groovy'
 
     void packAllWithDate() {
-        String date = new Date().format('yyyy-MM-dd--HH-mm')
+        String date = new SimpleDateFormat('yyyy-MM-dd--HH-mm').format(new Date())
         baseDir = baseDir.child(date)
         baseDir.mkdir()
         assert baseDir.exists()

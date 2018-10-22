@@ -6,7 +6,11 @@ import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.classpath.AddFilesToClassLoaderGroovy
 import net.sf.jremoterun.utilities.groovystarter.GroovyMethodRunnerParams
 import net.sf.jremoterun.utilities.mdep.DropshipClasspath
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
+import net.sf.jremoterun.utilities.nonjdk.IfFrameworkSrcDirs
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitSomeRefs
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JrrStarterJarRefs
 import net.sf.jremoterun.utilities.nonjdk.git.GitRef
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
@@ -51,7 +55,7 @@ class IdeaInitPluginCompiler extends GenericCompiler {
             }
             log.info "file not found : ${child}"
         }
-        File f =  new GitRef(GitReferences.starter, "onejar/jrrutilities.jar").resolveToFile()
+        File f =  JrrStarterJarRefs.jrrutilitiesOneJar.resolveToFile()
         return f
     }
 
@@ -62,9 +66,10 @@ class IdeaInitPluginCompiler extends GenericCompiler {
         params.outputDir = new File(client.ifDir, 'build/ideainitpluginbuild')
         params.outputDir.mkdirs()
         params.javaVersion = '1.6'
-        File dir = new File(client.ifDir, 'src-idea/net/sf/jremoterun/utilities/nonjdk/idea/init')
-        assert dir.exists()
-        params.files.addAll(dir.listFiles().toList())
+        params.addInDir IfFrameworkSrcDirs.src_idea.childL('net/sf/jremoterun/utilities/nonjdk/idea/init');
+//        File dir = new File(client.ifDir, 'src-idea/net/sf/jremoterun/utilities/nonjdk/idea/init')
+//        assert dir.exists()
+//        params.files.addAll(dir.listFiles().toList())
 
 
         client.adder.add getJrrUtilsJar()
@@ -76,10 +81,10 @@ class IdeaInitPluginCompiler extends GenericCompiler {
     }
 
     void testUpdateIdeaJar(File tmpJar, File metaInf, File targetJar) {
-        assert targetJar.parentFile.exists()
+        assert targetJar.getParentFile().exists()
         testUpdateIdeaJar2(tmpJar, metaInf)
-        assert targetJar.parentFile.exists()
-        FileUtils.copyFile(tmpJar, targetJar)
+        assert targetJar.getParentFile().exists()
+        FileUtilsJrr.copyFile(tmpJar, targetJar)
         assert DigestUtils.sha256(tmpJar.bytes) == DigestUtils.sha256(targetJar.bytes)
         tmpJar.delete()
         log.info "file updated : ${targetJar}"
@@ -91,7 +96,7 @@ class IdeaInitPluginCompiler extends GenericCompiler {
         assert !tmpJar.exists()
 
         assert metaInf.directory
-        FileUtils.copyDirectoryToDirectory(metaInf, params.outputDir)
+        FileUtilsJrr.copyDirectoryToDirectory(metaInf, params.outputDir)
         ZipUtil.pack(params.outputDir, tmpJar)
 
 

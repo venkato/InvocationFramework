@@ -2,6 +2,7 @@ package net.sf.jremoterun.utilities.nonjdk.compiler3
 
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.nonjdk.IfFrameworkSrcDirs
 
 import java.util.logging.Logger
 
@@ -23,7 +24,7 @@ class CompileGroovyExtMethod extends CompileRequestClient {
 
 
     void compileExtMethods() {
-        params.addInDir new File(ifDir, "src-logger-ext-methods");
+        params.addInDir new File(ifDir, IfFrameworkSrcDirs.src_logger_ext_methods.dirName);
         params.outputDir = outputDir
         params.outputDir.mkdirs()
         params.javaVersion = '1.6'

@@ -4,6 +4,7 @@ import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.UrlToFileConverter
 import net.sf.jremoterun.utilities.classpath.ClRef
 
+import javax.management.ObjectName
 import java.io.File
 import java.lang.instrument.ClassDefinition;
 import java.net.MalformedURLException;
@@ -38,6 +39,7 @@ public class JrrJavassistUtils {
 	public static String constrMethod = '<init>';
 
 	public static String LogVarName = '$log'
+	public static String mapVarName = '$map12'
 
 	// following can be used in groovy code, without escaping
 	public static String LogVarName2 = 'jrrlog'
@@ -48,7 +50,19 @@ public class JrrJavassistUtils {
 			java.util.logging.Logger ${LogVarName2} = ${LogVarName};
 		"""
 
-			
+	public static String createGlobalServicesMapVar =
+			'''
+java.util.Map $map12;
+try {
+	$map12 = (java.util.Map) java.lang.management.ManagementFactory.getPlatformMBeanServer().getAttribute(new javax.management.ObjectName("JRemoteRun:type=Runner"), "SharedObjects");
+}catch(Exception e){
+	throw new RuntimeException(e);
+}
+
+
+'''
+
+
 	public static volatile boolean initDone = false;
 
 	public static void init() throws Exception {
@@ -98,7 +112,7 @@ public class JrrJavassistUtils {
 	}
 
 			
-	public static CtMethod findMethodG(final CtClass cc,
+	static CtMethod findMethodG(final CtClass cc,
 		@ClosureParams(value=SimpleType.class, options="javassist.CtMethod")
 		  Closure<Boolean> matcher)
 			throws NoSuchMethodException, NotFoundException {
@@ -112,7 +126,7 @@ public class JrrJavassistUtils {
 	}
 
 
-	public static CtMethod findMethod(final Class clazz ,final CtClass cc, final String methodName, final int numberParams)
+	static CtMethod findMethod(final Class clazz ,final CtClass cc, final String methodName, final int numberParams)
 			throws NoSuchMethodException, NotFoundException {
 		if(!clazz.getName().equals(cc.getName())) {
 			throw new IllegalArgumentException("class names mismacthes : "+clazz.getName()+" , "+cc.getName());
@@ -154,9 +168,25 @@ public class JrrJavassistUtils {
 		}
 		throw new NoSuchMethodException(cc.getName() + ", params count: "+numberParams);
 	}
+
+	static void appendForEachConstructorThreadDump(ClRef clazz){
+		Class<?> clazz1 = clazz.loadClass2()
+		appendForEachConstructorThreadDump(clazz1)
+	}
+
+	static void appendForEachConstructorThreadDump(Class clazz){
+		appendForEachConstructor(clazz,'{Thread.dumpStack();}')
+	}
+
+	static void appendForEachConstructor(Class clazz,String code){
+		CtClass ctClass = getClassFromDefaultPool(clazz);
+		ctClass.getConstructors().toList().each {
+			it.insertAfter(code);
+		}
+		redefineClass(ctClass,clazz);
+	}
 			
-			
-	public static CtConstructor findConstructorG(final CtClass cc, 
+	static CtConstructor findConstructorG(final CtClass cc,
 		@ClosureParams(value=SimpleType.class, options="javassist.CtConstructor")
 		Closure<Boolean> matcher)
 			throws NoSuchMethodException, NotFoundException {
@@ -220,7 +250,11 @@ public class JrrJavassistUtils {
 
 	public static List<Class> getRelatedClasses2(final Class class1) throws Exception {
 		final ClassLoader classLoader = class1.getClassLoader();
-		File file = UrlToFileConverter.c.convert(JrrUtils.getClassFileLocation(class1));
+		URL url77=JrrUtils.getClassFileLocation(class1);
+		if(url77==null){
+			throw new Exception("failed detect url for class : "+class1.getName())
+		}
+		File file = UrlToFileConverter.c.convert(url77);
 		JrrUtilities.checkFileExist(file)
 		String prefix = getBaseName(file);
 		List<File> childs = []
@@ -255,13 +289,13 @@ public class JrrJavassistUtils {
 	}
 
 	
-	public static void redefineClass(final CtClass class2, Class class1)
+	public static void redefineClass(final CtClass ctClass, Class class1)
 			throws Exception {
-		assert class2.name == class1.name
-		final ClassDefinition classDefinition = new ClassDefinition(class1, class2.toBytecode());
-		if (class2.isFrozen()) {
-			log.info("defrost " + class2.getName());
-			class2.defrost();
+		assert ctClass.name == class1.name
+		final ClassDefinition classDefinition = new ClassDefinition(class1, ctClass.toBytecode());
+		if (ctClass.isFrozen()) {
+			log.info("defrost " + ctClass.getName());
+			ctClass.defrost();
 		}
 		final ClassDefinition[] classDefinitions = [ classDefinition ];
 		if (SimpleJvmTiAgent.instrumentation == null) {

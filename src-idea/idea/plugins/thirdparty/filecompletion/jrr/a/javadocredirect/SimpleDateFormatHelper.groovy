@@ -109,8 +109,8 @@ public class SimpleDateFormatHelper {
     private void test() {
         Date date = null
         new SimpleDateFormat('yyyy-MM')
-        new Date().format('yyyy-MM')
-        date.format('yyyy-MM')
+        //new Date().format('yyyy-MM')
+        //date.format('yyyy-MM')
     }
 
 
@@ -118,10 +118,10 @@ public class SimpleDateFormatHelper {
         Date date = null
         Calendar calendar = null
         new SimpleDateFormat('yyyy-MM')
-        calendar.format('yyyy-MM')
-        new Date().format('yyyy-MM')
-        new Date().format('yyyy-MM', TimeZone.getTimeZone('Etc/GMT+3'))
-        date.format('yyyy-MM')
+        //calendar.format('yyyy-MM')
+        //new Date().format('yyyy-MM')
+        //new Date().format('yyyy-MM', TimeZone.getTimeZone('Etc/GMT+3'))
+        //date.format('yyyy-MM')
         Pattern p = ~"dsfsdfsd"
     }
 

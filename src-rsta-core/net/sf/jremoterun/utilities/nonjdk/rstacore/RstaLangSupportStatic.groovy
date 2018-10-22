@@ -8,6 +8,7 @@ import net.sf.jremoterun.utilities.classpath.ClassPathCalculatorWithAdder
 import net.sf.jremoterun.utilities.classpath.MavenCommonUtils
 import net.sf.jremoterun.utilities.groovystarter.GroovyMethodRunnerParams
 import net.sf.jremoterun.utilities.mdep.DropshipClasspath
+import org.apache.commons.lang3.SystemUtils
 import org.fife.rsta.ac.java.JarManager
 import org.fife.rsta.ac.java.buildpath.LibraryInfo
 import org.fife.ui.autocomplete.Completion
@@ -32,22 +33,20 @@ public class RstaLangSupportStatic {
 
     public OsInegrationClientI osInegrationClient
 
+    public static boolean addJfrIfExistS = true
+
     public ClassPathCalculatorWithAdder classPathCalculatorGroovy = new ClassPathCalculatorWithAdder();
+
+
+    JarManager createJarManager(){
+        return new LogImprovedJarManager()
+    }
 
     public void init() throws Exception {
         if (addFileSourceToRsta != null) {
             return;
         }
-        JarManager jarManager = new JarManager() {
-            @Override
-            public void addCompletions(CompletionProvider p, String text, Set<Completion> addTo) {
-                if (text.length() > 0 && text.length() < 3) {
-                    log.fine("text too short : " + text);
-                } else {
-                    super.addCompletions(p, text, addTo);
-                }
-            }
-        };
+        JarManager jarManager = createJarManager()
         try {
             LibraryInfo info = LibraryInfo.getMainJreJarInfo();
             if(info ==null){
@@ -66,6 +65,15 @@ public class RstaLangSupportStatic {
         defaultClassPathInit();
         // groovyLanguageSupport.getJarManager();
 
+    }
+
+    void addJfrJarIfExist(){
+        File javaHome = SystemUtils.getJavaHome();
+        assert javaHome.exists();
+        File jfrJar = javaHome.child('lib/jfr.jar');
+        if(jfrJar.exists()) {
+            classPathCalculatorGroovy.filesAndMavenIds.add(jfrJar)
+        }
     }
 
     void addEntryInFly(Object obj){
@@ -93,7 +101,7 @@ public class RstaLangSupportStatic {
         ClassLoader currentClassLoader = JrrClassUtils.getCurrentClassLoader();
         if (currentClassLoader instanceof URLClassLoader) {
             URLClassLoader urlClassLoader = (URLClassLoader) currentClassLoader;
-            classPathCalculatorGroovy.addClassPathFromURLClassLoader(urlClassLoader);
+            classPathCalculatorGroovy.addFilesToClassLoaderGroovySave.addClassPathFromURLClassLoader(urlClassLoader);
         } else {
             log.info("non url classloader");
         }
@@ -118,6 +126,9 @@ public class RstaLangSupportStatic {
             }
         } else {
             classPathCalculatorGroovy.filesAndMavenIds.add toolsJarFile
+        }
+        if(addJfrIfExistS){
+            addJfrJarIfExist()
         }
 
         classPathCalculatorGroovy.filesAndMavenIds.add DropshipClasspath.groovy

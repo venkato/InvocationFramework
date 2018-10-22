@@ -4,24 +4,29 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import groovy.transform.CompileStatic
+import idea.plugins.thirdparty.filecompletion.jrr.IndexReadyListener
 import idea.plugins.thirdparty.filecompletion.share.OSIntegrationIdea
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.NewValueListener
 import net.sf.jremoterun.utilities.classpath.MavenCommonUtils
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
+import net.sf.jremoterun.utilities.classpath.MavenDependenciesResolver
 import net.sf.jremoterun.utilities.classpath.MavenFileType2
 import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.mdep.ivy.IvyDepResolver2
 import net.sf.jremoterun.utilities.nonjdk.ideadep.LongTaskInfo
+import net.sf.jremoterun.utilities.nonjdk.ivy.ManyReposDownloaderImpl
 
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 import java.awt.Component
+import java.util.logging.Level
 import java.util.logging.Logger
 
 @CompileStatic
@@ -64,10 +69,15 @@ public class LibManager3 {
                 Task task = new Task.Backgroundable(project, "Add sources ...", true) {
                     @Override
                     public void run(ProgressIndicator indicator) {
-                        Object result3 = addSources3(indicator, libItem)
-                        if (valueListener4 != null) {
-                            valueListener4.newValue(result3)
+                        try {
+                            Object result3 = addSources3(indicator, libItem)
+                            if (valueListener4 != null) {
+                                valueListener4.newValue(result3)
+                            }
+                        }catch(Throwable e){
+                            JrrUtilities.showException("Failed add source", e)
                         }
+
                     }
                 };
                 ProgressManager.getInstance().run(task);
@@ -81,18 +91,21 @@ public class LibManager3 {
 
     List<MavenId> addSources3(ProgressIndicator progressIndicator, LibItem libItem) {
         IdeaClasspathLongTaskInfo longTaskInfo = new IdeaClasspathLongTaskInfo(progressIndicator)
-        IvyDepResolver2 resolver = MavenDefaultSettings.mavenDefaultSettings.mavenDependenciesResolver as IvyDepResolver2
+        ManyReposDownloaderImpl resolver = MavenDefaultSettings.mavenDefaultSettings.mavenDependenciesResolver as ManyReposDownloaderImpl
         IdeaIvyEvent ideaIvyEvent = new IdeaIvyEvent(longTaskInfo);
-        resolver.ivy.eventManager.addIvyListener(ideaIvyEvent)
+        resolver.addIvyListener(ideaIvyEvent)
         try {
             List<MavenId> result = addSources2(longTaskInfo, libItem);
-            log.info("add dource done for ${libItem.library.getName()}")
+            log.info("add source done for ${libItem.library.getName()}")
             return result;
         } finally {
-            resolver.ivy.eventManager.removeIvyListener(ideaIvyEvent)
+            resolver.removeIvyListener(ideaIvyEvent)
         }
 
     }
+
+    public static boolean tryDownloadSourcesDefault = true
+    boolean tryDownloadSources  = tryDownloadSourcesDefault
 
     List<MavenId> addSources2(LongTaskInfo longTaskInfo, LibItem libItem) {
         // List<MavenId> noSourceInLocalSources = []
@@ -112,12 +125,24 @@ public class LibManager3 {
         binWithMissingSources -= alreadedAddedSources2;
         log.info "found maven binaries without sources : ${binWithMissingSources}"
 
+        MavenCommonUtils mavenCommonUtilsSrc = new MavenCommonUtils();
+        mavenCommonUtilsSrc.fileType = MavenFileType2.source.fileSuffix
 
         binWithMissingSources = binWithMissingSources.sort()
-        MavenCommonUtils mavenCommonUtils = new MavenCommonUtils();
-        mavenCommonUtils.fileType = MavenFileType2.source.fileSuffix
+        if(tryDownloadSources) {
+            List<MavenId> allMissedSources = binWithMissingSources.findAll {
+                mavenCommonUtilsSrc.findMavenOrGradle(it) == null
+            }
+            MavenDependenciesResolver resolver = MavenDefaultSettings.mavenDefaultSettings.mavenDependenciesResolver
+            allMissedSources.each {
+                longTaskInfo.setCurrentTask("${it} downloading source ..")
+                resolver.resolveAndDownloadDeepDependencies(it,true,false)
+            }
+
+        }
+
         ls.noSourceInLocalSources.addAll(binWithMissingSources.findAll {
-            mavenCommonUtils.findMavenOrGradle(it) == null
+            mavenCommonUtilsSrc.findMavenOrGradle(it) == null
         })
         ls.noSourceInLocalSources.sort()
         log.info "no sources ${ls.noSourceInLocalSources}"
@@ -131,7 +156,11 @@ public class LibManager3 {
                     msg = "No sources : ${ls.noSourceInLocalSources}, "
                 }
                 msg = "${msg}Can' add find more sources"
-                JOptionPane.showMessageDialog(dialog8.txtDirectoryToSearch, msg)
+                Component component78 =null
+                if(dialog8!=null){
+                     component78 =  dialog8.txtDirectoryToSearch
+                }
+                JOptionPane.showMessageDialog(component78, msg)
             }
         } else {
             String msg;
@@ -265,7 +294,7 @@ public class LibManager3 {
                 throw new FileNotFoundException(fileToSave.absolutePath)
             }
 
-            IdeaAddFileWithSources withSources = new IdeaAddFileWithSources()
+            IdeaAddFileWithSources withSources =  IdeaAddFileWithSourcesFactory.defaultFactory.createAdded();
 //        LibConfigurator8 configurator4 = new LibConfigurator8()
 //        String libName = libItem.library.getName();
             Runnable r = {
@@ -290,14 +319,17 @@ public class LibManager3 {
                                 configurator8.assertWriteActionAllowed()
                                 log.info "import fine ${fileToSave}"
                                 configurator8.commit()
+
+                                importFinishedFineUnsafe.run()
                                 log.info "${libItem.library.getName()} commit done "
+
                             } catch (Throwable e) {
-                                JrrUtilities.showException("Failed import", e);
+                                importFailed.newValue(e)
                             }
                         }
                     }
                 } catch (Throwable e) {
-                    JrrUtilities.showException("Failed import", e);
+                    importFailed.newValue(e);
                 }
             }
             Runnable readyCallback = {
@@ -306,14 +338,36 @@ public class LibManager3 {
                         LibConfigurator8.submitTr(r);
                     }
                 } catch (Throwable e) {
-                    JrrUtilities.showException("Failed import", e);
+                    importFailed.newValue(e)
                 }
             }
             withSources.import2(OSIntegrationIdea.openedProject, fileToSave, readyCallback);
         } catch (Throwable e) {
-            JrrUtilities.showException("Failed import", e)
+            importFailed.newValue(e)
         }
     }
+
+    public static Runnable importFinishedFineUnsafe = {
+        Runnable r = {
+            log.info "sleep for 1 sec .."
+            Thread.sleep(1000);
+            DumbService.getInstance(IndexReadyListener.getOpenedProject()).smartInvokeLater {
+                log.info "index should be ready now"
+                importFinishedFine.run()
+            }
+        }
+        Thread thread = new Thread(r, 'Sleep after import classpath')
+        thread.start()
+    };
+
+    public static volatile Runnable importFinishedFine = {};
+    public static volatile NewValueListener<Throwable> importFailed = new NewValueListener<Throwable>() {
+        @Override
+        void newValue(Throwable throwable) {
+            log.log(Level.SEVERE,"Failed import",throwable)
+            JrrUtilities.showException("Failed import", throwable);
+        }
+    };
 
     public void runExport(LibItem libItem) {
         try {

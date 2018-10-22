@@ -2,6 +2,7 @@ package idea.plugins.thirdparty.filecompletion.jrr
 
 import groovy.transform.CompileStatic
 import idea.plugins.thirdparty.filecompletion.jrr.librayconfigurator.IdeaLibManagerSwing
+import idea.plugins.thirdparty.filecompletion.jrr.librayconfigurator.IdeaRuntimeClassRefrences
 import idea.plugins.thirdparty.filecompletion.share.Ideasettings.IdeaJavaRunner2Settings
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
@@ -17,7 +18,7 @@ class InitPlugin2 {
     private static final Logger log = LogManager.getLogger(JrrClassUtils.currentClass);
 
 
-    public static boolean inited = false;
+    public static volatile boolean inited = false;
 
     static boolean init() {
         if (inited) {
@@ -33,6 +34,7 @@ class InitPlugin2 {
         try {
             initImpl2()
         } catch (Throwable e) {
+            log.error("Failed init idea", e)
             JrrUtilities.showException("Failed init idea", e)
         }
     }
@@ -47,11 +49,17 @@ class InitPlugin2 {
             IvyDepResolver2.setDepResolver()
         }
         IndexReadyListener.listenersAfterProjectOpened.add {
-            log.info "creating IdeaLibManagerSwing .."
-            IdeaLibManagerSwing.createIdeaPanel12();
-            log.info "created IdeaLibManagerSwing"
+            try {
+                log.info "creating IdeaLibManagerSwing .."
+                IdeaLibManagerSwing.createIdeaPanel12();
+                log.info "created IdeaLibManagerSwing"
+            }catch(Throwable e){
+                log.error("Failed init idea", e)
+                JrrUtilities.showException("Failed init idea", e)
+            }
         }
-        IndexReadyListener.runListenersWhenReady()
+        IdeaRuntimeClassRefrences.addReferences()
+        IndexReadyListener.runListenersWhenReady2()
 
     }
 

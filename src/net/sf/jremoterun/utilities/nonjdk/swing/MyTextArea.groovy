@@ -1,20 +1,19 @@
-package net.sf.jremoterun.utilities.nonjdk.swing;
+package net.sf.jremoterun.utilities.nonjdk.swing
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rtextarea.RTextArea;
-import org.fife.ui.rtextarea.RTextScrollPane;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
+import org.fife.ui.rtextarea.RTextArea
+import org.fife.ui.rtextarea.RTextScrollPane
+
+import javax.swing.*
+import java.awt.*
+import java.awt.datatransfer.StringSelection
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 
 public class MyTextArea extends RSyntaxTextArea {
 
-private static final Logger log = LogManager.getLogger();
+
 
 	private long editsTry = 0;
 

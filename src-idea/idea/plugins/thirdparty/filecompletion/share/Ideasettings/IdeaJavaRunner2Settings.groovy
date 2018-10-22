@@ -1,6 +1,8 @@
 package idea.plugins.thirdparty.filecompletion.share.Ideasettings
 
 import groovy.transform.CompileStatic
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JrrStarterJarRefs
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JrrStarterJarRefs2
 import net.sf.jremoterun.utilities.nonjdk.idea.set2.SettingsRef
 
 
@@ -37,6 +39,14 @@ class IdeaJavaRunner2Settings {
         libs = new File(baseDir3 ,'libraries')
         runners = new File(baseDir3 ,'perrunner')
         jars = new File(baseDir3 ,'jars')
+
+    }
+
+    static String buildJavaAgentPath(){
+        File jrrCopy = JrrStarterJarRefs2.jremoterun.resolveToFile()
+        assert jrrCopy.exists()
+        String path2 = jrrCopy.getAbsolutePath().replace('\\','/')
+        return "-javaagent:${path2}"
 
     }
 

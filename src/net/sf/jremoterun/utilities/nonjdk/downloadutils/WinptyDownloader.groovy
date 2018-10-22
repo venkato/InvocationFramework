@@ -4,6 +4,7 @@ import com.pty4j.util.PtyUtil
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
 import net.sf.jremoterun.utilities.nonjdk.classpath.CustomObjectHandlerImpl
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
 import org.apache.commons.io.FileUtils
@@ -38,7 +39,7 @@ class WinptyDownloader {
             File f3 = new File(unzip, "x64/bin")
             assert f3.exists()
             assert toDir.mkdirs()
-            FileUtils.copyDirectory(f3, toDir)
+            FileUtilsJrr.copyDirectory(f3, toDir)
         }
         File checkFIle = new File(toDir, 'winpty.dll')
         assert checkFIle.exists()
@@ -48,13 +49,12 @@ class WinptyDownloader {
     }
 
     static void setPtyLibFolder(File unzip){
-        JrrClassUtils.setFieldValue(PtyUtil, 'PTY_LIB_FOLDER', unzip.absolutePath)
+        JrrClassUtils.setFieldValue(PtyUtil, 'PTY_LIB_FOLDER', unzip.getAbsolutePath())
     }
 
     static void copyLinuxNativeLibs(File toDir){
-        CustomObjectHandlerImpl handler = MavenDefaultSettings.mavenDefaultSettings.customObjectHandler as CustomObjectHandlerImpl
-        File nativeLibs = handler.resolveRef(GitReferences.pty4jLinuxLibs)
-        FileUtils.copyDirectory(nativeLibs,toDir)
+        File nativeLibs = GitReferences.pty4jLinuxLibs.resolveToFile()
+        FileUtilsJrr.copyDirectory(nativeLibs,toDir)
     }
 
 

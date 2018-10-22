@@ -13,7 +13,8 @@ class MainMethodRunner {
 
     static void run(ClRef cnr, List<String> args) {
         Class cll = cnr.loadClass(JrrClassUtils.currentClassLoader)
-        JrrClassUtils.runMainMethod(cll, args.toArray(new String[0]))
+        String[] args2 = args.toArray(new String[0])
+        JrrClassUtils.runMainMethod(cll, args2)
     }
 
 }

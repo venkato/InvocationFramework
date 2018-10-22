@@ -1,5 +1,8 @@
 package net.sf.jremoterun.utilities.nonjdk.timer;
 
+import groovy.transform.CompileStatic;
+
+@CompileStatic
 public interface TooShortPeriodListener {
 
 	/**

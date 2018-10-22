@@ -24,11 +24,13 @@ class RedefineIdeaClassUtils {
         log.info("ideaLoggerTurnOff enter")
         Class class1 = com.intellij.idea.IdeaLogger;
         final CtClass cc = JrrJavassistUtils.getClassFromDefaultPool(class1);
-        CtBehavior invokeMethod = JrrJavassistUtils.findMethod(class1, cc, "logErrorHeader", 0);
+        CtBehavior invokeMethod = JrrJavassistUtils.findMethod(class1, cc, "logErrorHeader", 1);
         invokeMethod.setBody('{myLogger.info("Last Action Id = " + ourLastActionId ); }');
         JrrJavassistUtils.redefineClass(cc, class1);
         log.info("ideaLoggerTurnOff exit")
     }
+
+
 
 
     public static void setDisalogNotBlocking() throws Exception {

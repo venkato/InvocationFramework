@@ -52,7 +52,7 @@ class JavaStartConfigHook extends InjectedCode {
     static void installHook() {
         Class clazz = SingleConfigurationConfigurable
         CtClass ctClass = JrrJavassistUtils.getClassFromDefaultPool(clazz)
-        CtConstructor method = JrrJavassistUtils.findConstructor(ctClass, 2)
+        CtConstructor method = JrrJavassistUtils.findConstructor( ctClass, 2)
         method.insertAfter """
             ${CodeInjector.createSharedObjectsHookVar2(clazz)}
             ${CodeInjector.myHookVar}.get(this);
@@ -61,13 +61,17 @@ class JavaStartConfigHook extends InjectedCode {
         JrrJavassistUtils.redefineClass(ctClass, clazz);
     }
 
+    public static boolean doIsokComponentCheck = false;
+
     void getImpl2(Object o) {
         com.intellij.execution.impl.SingleConfigurationConfigurable c = o as SingleConfigurationConfigurable;
         SettingsEditor settingsEditor = c.getEditor()
         JComponent component = settingsEditor.getComponent()
         log.info "layout 2 ${component.layout} ${c.nameText} ${c.displayName}"
-        Component component1 = SwingComponentFinder.findComponent(component, this.&isOkCOmponent)
-        assert component1!=null
+        if(doIsokComponentCheck) {
+            Component component1 = SwingComponentFinder.findComponent(component, this.&isOkCOmponent)
+            assert component1 != null
+        }
         Container parent = component.parent;
         log.info "${parent.layout} "
         GridBagLayout layout2 = parent.layout as GridBagLayout
@@ -88,6 +92,12 @@ class JavaStartConfigHook extends InjectedCode {
     JPanel createPanel(String runnerName){
         JPanel panel =new JPanel(new BorderLayout())
         //java.util.List<String> list1= new ArrayList(Arrays.asList( IdeaJavaRunnerSettings.libs.list()))
+        if(!IdeaJavaRunner2Settings.libs.exists()){
+            throw new FileNotFoundException(IdeaJavaRunner2Settings.libs.getAbsolutePath());
+        }
+        if(!IdeaJavaRunner2Settings.libs.isDirectory()){
+            throw new IOException("Not a dir : "+IdeaJavaRunner2Settings.libs.getAbsolutePath());
+        }
         java.util.List<String> list1= IdeaJavaRunner2Settings.libs.listFiles().toList().collect {FilenameUtils.getBaseName(it.name)}
         list1.add(none)
         File runnerFile = new File(IdeaJavaRunner2Settings.runners, runnerName)

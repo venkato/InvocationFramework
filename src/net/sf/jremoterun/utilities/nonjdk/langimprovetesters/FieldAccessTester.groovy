@@ -18,8 +18,8 @@ class FieldAccessTester extends Script {
 
     static void fieldAccess() {
         URLClassLoader cl = new URLClassLoader(new URL[0], ExtMethodsTester.classLoader)
-        Object pdcache = cl.@pdcache
-        pdcache.toString()
+//        Object pdcache = cl.@pdcache
+//        pdcache.toString()
     }
 
     static void smartCast() {

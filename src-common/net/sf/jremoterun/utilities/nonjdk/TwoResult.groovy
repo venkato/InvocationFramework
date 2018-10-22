@@ -25,4 +25,9 @@ class TwoResult<T, E> implements Serializable{
 	E getSecond() {
 		return second
 	}
+
+	@Override
+	String toString() {
+		return "${first} , ${second}"
+	}
 }

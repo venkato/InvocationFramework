@@ -15,6 +15,7 @@ class Writer3Sub extends Writer3{
 
     String className = 'Config'
 
+
     static MethodClosure doConfigMethod =(MethodClosure) GroovyRunnerConfigurator2.&doConfig;
 
 
@@ -24,11 +25,12 @@ class Writer3Sub extends Writer3{
         addImport(CompileStatic)
     }
 
+    @Override
     String buildResult() {
         List<String> res = header + importss.collect { "import ${it} ;" as String};
 
 //        res += ['']
-//        res += ['@CompileStatic']
+        addAnotations()
         res += ["class ${className} extends ${GroovyRunnerConfigurator2.simpleName} {" as String]
 //        res += ["${className}(Binding bi){super(bi)}" as String]
 //        res += ['@Override']

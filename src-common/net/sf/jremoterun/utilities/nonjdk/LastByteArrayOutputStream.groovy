@@ -17,15 +17,22 @@ class LastByteArrayOutputStream extends ByteArrayOutputStream {
      */
     public static int bufferSizeDefault = 16_000;
 
-    int msgSize = msgSizeDefault
+    int msgSize ;
 
-    byte[] buf1 = new byte[bufferSizeDefault]
-    byte[] buf2 = new byte[bufferSizeDefault]
+    byte[] buf1;
+    byte[] buf2;
 
     boolean usesFirst = true
 
     LastByteArrayOutputStream() {
+        this(msgSizeDefault,bufferSizeDefault)
+    }
+
+    LastByteArrayOutputStream(int msgSize,int bufferSize) {
         super(0)
+        this.msgSize=msgSize;
+        buf1 = new byte[bufferSize]
+        buf2 = new byte[bufferSize]
         buf = buf1
     }
 

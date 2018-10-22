@@ -7,7 +7,7 @@ import java.util.logging.Logger
 
 class JrrAntUtils {
 
-    private static final Logger log = Logger.getLogger(JrrAntUtils.name);
+    private static final Logger log = Logger.getLogger(JrrAntUtils.getName());
 
 
     public static AntBuilder ant = new AntBuilder()

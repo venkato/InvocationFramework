@@ -1,12 +1,15 @@
 package net.sf.jremoterun.utilities.nonjdk.tcpmon;
 
 import groovy.transform.CompileStatic;
+import net.sf.jremoterun.utilities.JrrClassUtils;
 import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * wait for incoming connections, spawn a connection thread when stuff comes
@@ -15,7 +18,7 @@ import java.net.Socket;
 @CompileStatic
 public class SocketWaiter extends Thread {
 
-    private static final org.apache.logging.log4j.Logger log = LogManager.getLogger();
+    private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     public ServerSocket sSocket = null;
 
@@ -94,7 +97,7 @@ public class SocketWaiter extends Thread {
                 sSocket.close();
             }
         } catch (final Exception e) {
-            log.info("", e);
+            log.log(Level.INFO,"", e);
         }
     }
 }

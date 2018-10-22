@@ -14,6 +14,9 @@ public class RedirectOutStream {
 	private static final Logger log = Logger.getLogger(JrrClassUtils.getCurrentClass().getName());
 	
 	public static void setOutStreamWithRotation(File file,int maxCount) throws Exception {
+		if(file==null){
+			throw new NullPointerException("argument file is null")
+		}
 		if (file.exists()) {
 			try {
 				FileRotate.rotateFile(file, maxCount);

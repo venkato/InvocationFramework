@@ -24,9 +24,18 @@ class ListStore<T> {
         file.text = saveS(list)
     }
 
+    Writer3 createWriter(){
+        return new Writer3Sub()
+    }
+
+    ObjectWriter createObjectWriter(){
+        return new ObjectWriter()
+    }
+
+
     String saveS(List<T> list) {
-        Writer3 writer3 = new Writer3Sub()
-        ObjectWriter writer = new ObjectWriter()
+        Writer3 writer3 = createWriter()
+        ObjectWriter writer = createObjectWriter()
         writer3.addCreatedAtHeader()
         writer3.body.add "List b = ${writer3.generateGetProperty(varName)} as List;".toString()
         writer3.body.addAll list.collect {

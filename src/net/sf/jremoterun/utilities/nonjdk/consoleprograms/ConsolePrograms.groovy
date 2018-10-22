@@ -69,13 +69,6 @@ class ConsolePrograms extends GroovyRunnerConfigurator2 {
     }
 
 
-    void addProgram(String acronym, ClRef impl) {
-        ClRef put = classMap.put(acronym, impl)
-        if (put != null) {
-            throw new Exception("shotcust ${acronym} already exist, old = ${put} , new = ${impl}")
-        }
-    }
-
     void addProgram2(String acronym, Object impl) {
         if(impl instanceof Class){
             addProgram(acronym,impl)
@@ -85,7 +78,15 @@ class ConsolePrograms extends GroovyRunnerConfigurator2 {
         }else {
             throw new IllegalStateException("uknown object ${impl} for ${acronym}")
         }
+    }
 
+
+
+    void addProgram(String acronym, ClRef impl) {
+        ClRef put = classMap.put(acronym, impl)
+        if (put != null) {
+            throw new Exception("shotcust ${acronym} already exist, old = ${put} , new = ${impl}")
+        }
     }
 
     void addProgram(String acronym, Class impl) {

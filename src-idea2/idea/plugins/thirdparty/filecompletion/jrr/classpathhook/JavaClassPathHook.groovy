@@ -3,6 +3,7 @@ package idea.plugins.thirdparty.filecompletion.jrr.classpathhook
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.JavaCommandLineState
 import com.intellij.execution.configurations.ParametersList
+import com.intellij.execution.runners.ExecutionEnvironment
 import groovy.transform.CompileStatic
 import idea.plugins.thirdparty.filecompletion.share.Ideasettings.IdeaJavaRunner2Settings
 import javassist.CtClass
@@ -31,6 +32,7 @@ class JavaClassPathHook extends InjectedCode {
         }else {
             inited = true
             JavaClassPathHook.installHook()
+            JavaClassPathHookV2.installHook()
             JavaStartConfigHook.installHook()
         }
     }
@@ -60,15 +62,16 @@ class JavaClassPathHook extends InjectedCode {
         JavaCommandLineState commandLineState = obj[0] as JavaCommandLineState;
         GeneralCommandLine generalCommandLine = obj[1] as GeneralCommandLine
 
-        ParametersList parametersList = generalCommandLine.parametersList
-        log.info "parametersString : ${parametersList.parametersString}"
-        List<String> list = parametersList.list
+        ParametersList parametersList = generalCommandLine.getParametersList()
+        log.info "parametersString : ${parametersList.getParametersString()}"
+        List<String> list = parametersList.getList()
 //        list
         IdeaJavaRunner2Settings.jvmOptions.reverse(false).each {
             parametersList.addAt(0, it)
         }
 
-        String runnerName = commandLineState.environment.toString()
+        ExecutionEnvironment environment = commandLineState.getEnvironment()
+        String runnerName = environment.toString()
         File runnerFile = new File(IdeaJavaRunner2Settings.runners, runnerName)
         if (!runnerFile.exists()) {
             log.info "no runner file ${runnerFile}"
@@ -76,7 +79,7 @@ class JavaClassPathHook extends InjectedCode {
         }
         File libNameAsGroovy = new File(IdeaJavaRunner2Settings.libs, runnerFile.text + '.groovy')
         if (!libNameAsGroovy.exists()) {
-            log.info "file not exists ${libNameAsGroovy}"
+            log.info "file not exists : ${libNameAsGroovy}"
             return null
         }
 

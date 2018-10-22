@@ -14,12 +14,15 @@ public class TimerPeriod extends TimerController {
 
 	private transient static final Logger log = LogManager.getLogger();
 
-	private net.sf.jremoterun.utilities.nonjdk.timer.TimerStyle timerStyle;
+	private TimerStyle timerStyle;
 
 	private Runnable task;
 
-	protected net.sf.jremoterun.utilities.nonjdk.timer.Timer timer = new net.sf.jremoterun.utilities.nonjdk.timer.Timer(this);
+	protected Timer timer = new Timer(this);
 
+	/**
+	 * period in milli seconds
+	 */
 	private long period;
 
 	private boolean runNow = true;
@@ -28,6 +31,9 @@ public class TimerPeriod extends TimerController {
 
 	}
 
+	/**
+	 * ignore, if already running
+	 */
 	public void start() {
 		if (timer.isTimerRunning()) {
 			log.warn("timer is running");
@@ -36,6 +42,9 @@ public class TimerPeriod extends TimerController {
 		}
 	}
 
+	/**
+	 * Throw exception if already started
+	 */
 	public void start2() {
 		if (timer.isTimerRunning()) {
 			// log.warn("timer is running");
@@ -51,7 +60,7 @@ public class TimerPeriod extends TimerController {
 	 * @param task
 	 */
 	public TimerPeriod(final long period, final Runnable task) {
-		this(net.sf.jremoterun.utilities.nonjdk.timer.TimerStyle.Consecutive, task, period);
+		this(TimerStyle.Consecutive, task, period);
 	}
 
 	/**
@@ -60,7 +69,7 @@ public class TimerPeriod extends TimerController {
 	 * @param period
 	 *            in ms
 	 */
-	public TimerPeriod(final net.sf.jremoterun.utilities.nonjdk.timer.TimerStyle timerStyle, final Runnable task, final long period) {
+	public TimerPeriod(final TimerStyle timerStyle, final Runnable task, final long period) {
 		this.timerStyle = timerStyle;
 		this.task = task;
 		this.period = period;
@@ -95,7 +104,7 @@ public class TimerPeriod extends TimerController {
 			break;
 		case NoWait:
 			final Thread thread = new Thread(task);
-			net.sf.jremoterun.utilities.nonjdk.timer.Timer.setThreadName(thread, "Jrr Timer Run");
+			Timer.setThreadName(thread, "Jrr Timer Run");
 			thread.start();
 			break;
 		default:
@@ -108,6 +117,9 @@ public class TimerPeriod extends TimerController {
 		return period;
 	}
 
+	/**
+	 * Period in ms
+	 */
 	public synchronized void setPeriod(final long period) {
 		if (period <= 0) {
 			throw new TimerException("period <= 0");
@@ -129,7 +141,7 @@ public class TimerPeriod extends TimerController {
 
 	}
 
-	public net.sf.jremoterun.utilities.nonjdk.timer.TimerStyle getTimerStyle() {
+	public TimerStyle getTimerStyle() {
 		return timerStyle;
 	}
 

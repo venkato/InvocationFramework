@@ -12,16 +12,16 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.util.ProcessingContext
 import groovy.transform.CompileStatic
 import idea.plugins.thirdparty.filecompletion.jrr.IdeaMagic
+import idea.plugins.thirdparty.filecompletion.jrr.a.actions.CompletionProviderCommon
 import idea.plugins.thirdparty.filecompletion.share.OSIntegrationIdea
 import net.sf.jremoterun.utilities.JrrClassUtils
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
-import org.jetbrains.annotations.NotNull
 
 import javax.swing.*
 
 @CompileStatic
-public class FileCompletionProviderImpl extends CompletionProvider<CompletionParameters> {
+public class FileCompletionProviderImpl extends CompletionProviderCommon {
 
     private static final Logger log = LogManager.getLogger(JrrClassUtils.currentClass);
 
@@ -31,7 +31,7 @@ public class FileCompletionProviderImpl extends CompletionProvider<CompletionPar
 
     @Override
     protected void addCompletions(
-            @NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
+            CompletionParameters parameters, ProcessingContext context, CompletionResultSet result) {
         if (result.isStopped()) {
             return;
         }

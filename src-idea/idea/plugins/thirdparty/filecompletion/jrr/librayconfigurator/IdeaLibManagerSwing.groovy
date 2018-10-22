@@ -16,6 +16,9 @@ import net.sf.jremoterun.JrrUtils
 import net.sf.jremoterun.utilities.Java4VM
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
+import net.sf.jremoterun.utilities.classpath.ToFileRef2
+import net.sf.jremoterun.utilities.nonjdk.BaseDirSetting
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
 import net.sf.jremoterun.utilities.nonjdk.classpath.calchelpers.ClassPathCalculatorSup2Groovy
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import net.sf.jremoterun.utilities.nonjdk.idea.set2.SettingsRef
@@ -60,7 +63,8 @@ class IdeaLibManagerSwing {
 
     DefaultMutableTreeNode globalLibNode = new DefaultMutableTreeNode("Global libraries")
 
-    FileStore listStore = new FileStore(new File("${System.getProperty('user.home')}/jrr/configs/idea_classpath_files_latest.groovy"))
+    public static ToFileRef2 ideaClassPathLatest = BaseDirSetting.baseDirSetting.childL("configs/idea_classpath_files_latest.groovy");
+    FileStore listStore = new FileStore(ideaClassPathLatest.resolveToFile());
 
     JTree tree = new JTree(rootTreeNode)
     JPanel topPanel = new JPanel4FlowLayout()
@@ -204,7 +208,7 @@ class IdeaLibManagerSwing {
         }
 
 
-        saveSettings.setEnabled(SettingsRef.locationEdit.exists())
+        saveSettings.setEnabled(SettingsRef.locationEdit.resolveToFile().exists())
 
 //        editSettings.setEnabled(!SettingsRef.locationEdit.exists())
         panel.add(scrollPane, BorderLayout.CENTER)
@@ -264,10 +268,10 @@ class IdeaLibManagerSwing {
     }
 
     private saveSettings() {
-        if (SettingsRef.locationEdit.exists()) {
+        if (SettingsRef.locationEdit.resolveToFile().exists()) {
             Runnable r3 = {
                 OSIntegrationIdea.saveAllImpl2();
-                if (SettingsRef.locationEdit.length() < 10) {
+                if (SettingsRef.locationEdit.resolveToFile().length() < 10) {
                     log.info "file is empty ${SettingsRef.locationEdit}"
                     JOptionPane.showMessageDialog(null, "file is empty ${SettingsRef.locationEdit}")
                 } else {
@@ -291,10 +295,10 @@ class IdeaLibManagerSwing {
     }
 
     private saveSettingsImpl() {
-        GroovyFileChecker.analize(SettingsRef.locationEdit.text)
-        SettingsRef.loadSettingsS(SettingsRef.locationEdit)
-        FileUtils.copyFile(SettingsRef.locationEdit, SettingsRef.location)
-        SettingsRef.locationEdit.text = ''
+        GroovyFileChecker.analize(SettingsRef.locationEdit.resolveToFile().text)
+        SettingsRef.loadSettingsS(SettingsRef.locationEdit.resolveToFile())
+        FileUtilsJrr.copyFile(SettingsRef.locationEdit.resolveToFile(), SettingsRef.location.resolveToFile())
+        SettingsRef.locationEdit.resolveToFile().text = ''
         log.info('settins loaded fine')
         SwingUtilities.invokeLater {
             try {
@@ -312,21 +316,21 @@ class IdeaLibManagerSwing {
     private void editSetttingss() {
         boolean edit = editSetttingssImpl();
         if (edit) {
-            OSIntegrationIdea.osIntegrationIdea.openFile(SettingsRef.locationEdit, '1.groovy')
+            OSIntegrationIdea.osIntegrationIdea.openFile(SettingsRef.locationEdit.resolveToFile(), '1.groovy')
         }
     }
 
     private boolean editSetttingssImpl() {
         SwingUtilities.invokeLater { saveSettings.setEnabled(true) }
-        if (SettingsRef.locationEdit.exists() && SettingsRef.locationEdit.length() > 100) {
+        if (SettingsRef.locationEdit.resolveToFile().exists() && SettingsRef.locationEdit.resolveToFile().length() > 100) {
             return true;
         }
-        if (SettingsRef.location.exists()) {
-            FileUtils.copyFile(SettingsRef.location, SettingsRef.locationEdit)
+        if (SettingsRef.location.resolveToFile().exists()) {
+            FileUtilsJrr.copyFile(SettingsRef.location.resolveToFile(), SettingsRef.locationEdit.resolveToFile())
             return true
         }
         log.info "file not found : ${SettingsRef.location}"
-        File parentDir = SettingsRef.location.parentFile
+        File parentDir = SettingsRef.location.resolveToFile().getParentFile()
         if (!parentDir.exists()) {
             log.info "creating dirs : ${parentDir}"
             boolean mkdirs = parentDir.mkdirs()
@@ -336,7 +340,7 @@ class IdeaLibManagerSwing {
                 return false
             }
         }
-        SettingsRef.locationEdit.text = JavaBeanStore.save3(SettingsRef.config)
+        SettingsRef.locationEdit.resolveToFile().text = JavaBeanStore.save3(SettingsRef.config)
         log.info "file created"
 //        SwingUtilities.invokeLater{editSettings.setEnabled(false)}
         return true;

@@ -47,6 +47,11 @@ class IdeaSdkToLibAdapterRead implements Library {
         return projectJdk.name
     }
 
+    //@Override
+    String getPresentableName() {
+        return getName()
+    }
+
     @Override
     String[] getUrls(@NotNull OrderRootType rootType) {
         return projectJdk.getRoots(rootType).toList().collect { it.toString() }.toArray(new String[0])
@@ -93,6 +98,11 @@ class IdeaSdkToLibAdapterRead implements Library {
         return false
     }
 
+
+    boolean hasSameContent(@NotNull Library library) {
+        log.info "has same content lib ${library}"
+        return false
+    }
 
     @Override
     void dispose() {

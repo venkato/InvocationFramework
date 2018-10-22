@@ -60,17 +60,26 @@ ${classPath}
      * return without tail
      */
     static List<File> getClassLocationAll2(final Class clazz) {
-        final String tail = clazz.getName().replace('.', '/') + ".class";
+        final String tailJava = clazz.getName().replace('.', '/') + ".class";
+        final String tailGroovy = clazz.getName().replace('.', '/') + ".groovy";
         List<URL> urls = getClassLocationAll(clazz.getName(), clazz.getClassLoader())
+        // log.info "urls = ${urls}"
         List<File> files = urls.collect {
-            String asString = it.toString();
-            asString = asString.substring(0, asString.length() - tail.length());
+            final String asString1 = it.toString();
+            String asString;
+            if (asString1.endsWith('.class')) {
+                asString = asString1.substring(0, asString1.length() - tailJava.length());
+            } else if (asString1.endsWith('.groovy')) {
+                asString = asString1.substring(0, asString1.length() - tailGroovy.length());
+            } else {
+                throw new UnsupportedOperationException("strange file : ${it}")
+            }
             if (asString.startsWith("jar:")) {
                 asString = asString.substring(4, asString.length() - 2);
-
             }
             URL url = new URL(asString)
-            return UrlToFileConverter.c.convert(url)
+            File res = UrlToFileConverter.c.convert(url)
+            return res
         }
         return files
     }
@@ -141,6 +150,9 @@ ${classPath}
      */
     static List<URL> getClassLocationAll(final String className, ClassLoader classLoader)
             throws MalformedURLException {
+        if(className == Class.getName()){
+            throw new IllegalArgumentException("Strange class name : ${className}")
+        }
         final String tail = UrlCLassLoaderUtils.buildClassNameSuffix(className);
         if (classLoader == null) {
             log.info("class loaded by boot class loader : ${className}, finding any resource instead of all")

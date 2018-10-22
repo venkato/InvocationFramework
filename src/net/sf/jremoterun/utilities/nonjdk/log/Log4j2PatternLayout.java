@@ -7,7 +7,6 @@ import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.layout.ByteBufferDestination;
 import org.apache.logging.log4j.message.Message;
-import org.apache.logging.log4j.util.StringBuilderFormattable;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -136,16 +135,16 @@ public class Log4j2PatternLayout implements Layout<String> {
 //                if(s.contains("http://search.maven.org/#search")){
 //                    Thread.dumpStack();
 //                }
-                logMessage(sb,s,logRecord);
+                logMessage(sb, s, logRecord);
             }
         }
 
 
-        logStackTrace(logRecord, sb, stackTraces, location);
+        logStackTraceIfNeeded(logRecord, sb, stackTraces, location);
         sb.append(sep);
     }
 
-    public void logMessage(StringBuilder sb, String msg,LogEvent logRecord){
+    public void logMessage(StringBuilder sb, String msg, LogEvent logRecord) {
         sb.append(msg);
     }
 
@@ -206,43 +205,59 @@ public class Log4j2PatternLayout implements Layout<String> {
         }
     }
 
-    public void logStackTrace(LogEvent logRecord, StringBuilder sb, StackTraceElement[] stackTraces, StackTraceElement location) {
-        boolean error = false;
-        if (Level.WARN.isLessSpecificThan(logRecord.getLevel())) {
-            error = true;
+    public void onEmptyStackTrace(LogEvent logRecord, StringBuilder sb, StackTraceElement[] stackTraces, StackTraceElement location, Throwable ti) {
+
+    }
+
+
+    public boolean isNeedPrintStackTrace(LogEvent logRecord, StringBuilder sb, StackTraceElement[] stackTraces, StackTraceElement location, Throwable ti) {
+        if (!Level.WARN.isLessSpecificThan(logRecord.getLevel())) {
+            return false;
         }
+        boolean isLogStackTrace = isLogExceptionStackTrace.isLogStackTrace(logRecord, sb, stackTraces, location, ti);
+        return isLogStackTrace;
+    }
+
+    public void logStackTraceIfNeeded(LogEvent logRecord, StringBuilder sb, StackTraceElement[] stackTraces, StackTraceElement location) {
         Throwable ti = logRecord.getThrown();
-        if (ti != null) {
+        final boolean error = isNeedPrintStackTrace(logRecord, sb, stackTraces, location, ti);
+        if (ti == null) {
+            if (error) {
+                writeStackTrace(sb, stackTraces);
+            }
+        } else {
             sb.append(" ");
             Throwable rootException = JrrUtils.getRootException(ti);
             if (error) {
-                boolean isLogStackTrace = isLogExceptionStackTrace.isLogStackTrace(logRecord, sb, stackTraces, location, ti);
-                error = isLogStackTrace;
-            }
-            if (error) {
-                final StringWriter stringWriter = new StringWriter();
-                rootException.printStackTrace(new PrintWriter(stringWriter));
-                sb.append(stringWriter.getBuffer());
+                StackTraceElement[] stackTraces3 = rootException.getStackTrace();
+                if (stackTraces3 == null || stackTraces3.length == 0) {
+                    onEmptyStackTrace(logRecord, sb, stackTraces, location, ti);
+                    writeStackTrace(sb, stackTraces);
+                } else {
+                    final StringWriter stringWriter = new StringWriter();
+                    rootException.printStackTrace(new PrintWriter(stringWriter));
+                    sb.append(stringWriter.getBuffer());
+                }
             } else {
                 sb.append(rootException);
             }
-        } else if (error) {
-            boolean isLogStackTrace = isLogExceptionStackTrace.isLogStackTrace(logRecord, sb, stackTraces, location, ti);
-            if (isLogStackTrace) {
-                int i = 0;
-                for (StackTraceElement stackTraceElement : stackTraces) {
-                    i++;
-                    if (i < 5) {
-                        continue;
-                    }
-                    if (acceptStackTraceElement(stackTraceElement)) {
-                        sb.append(sep);
-                        sb.append("  ");
-                        sb.append(stackTraceElement.toString());
-                    }
-                }
+        }
+    }
+
+    public void writeStackTrace(StringBuilder sb, StackTraceElement[] stackTraces) {
+        int i = 0;
+        for (StackTraceElement stackTraceElement : stackTraces) {
+            i++;
+            if (i < 5) {
+                continue;
+            }
+            if (acceptStackTraceElement(stackTraceElement)) {
+                sb.append(sep);
+                sb.append("  ");
+                sb.append(stackTraceElement.toString());
             }
         }
+
     }
 
 

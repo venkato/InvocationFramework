@@ -2,79 +2,139 @@ package net.sf.jremoterun.utilities.nonjdk.memorystat
 
 import com.sun.management.GcInfo
 import groovy.transform.CompileStatic
+import net.sf.jremoterun.utilities.DefaultObjectName
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.MBeanClient
 import net.sf.jremoterun.utilities.MbeanConnectionCreator
-import org.junit.Test
 
+import javax.management.MalformedObjectNameException
 import javax.management.ObjectInstance
 import javax.management.ObjectName
 import java.lang.management.GarbageCollectorMXBean
 import java.lang.management.ManagementFactory
 import java.lang.management.MemoryPoolMXBean
 import java.lang.management.MemoryUsage
+import java.text.SimpleDateFormat
 import java.util.logging.Logger
 
 @CompileStatic
-class MemoryStatCollector {
+abstract class MemoryStatCollector implements DefaultObjectName {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
-    static Date lastCheckDate ;
+    public static ObjectName objectName = new ObjectName('jrr:type=memoryUsage')
 
-    static List<String> oldGens = ['ConcurrentMarkSweep','PS MarkSweep','G1 Old Generation',]
-    static List<String> oldGens2 = ['CMS Old Gen','PS Old Gen','G1 Old Gen']
+    public static List<String> oldGens = ['ConcurrentMarkSweep', 'PS MarkSweep', 'G1 Old Generation',]
+    public static List<String> oldGens2 = ['CMS Old Gen', 'PS Old Gen', 'G1 Old Gen']
+    public Date lastCheckDate;
 
+    public float maxUsedOldGenPercent = 70f
+    public float maxAllowedGcDurationMs = 5000
+    public long ignoreLongGcHappenedOlderThen = 3600_000
+    public static long oneMegaByte = 1000_000
 
-    @Test
-     void collectGcStat4() {
-        System.gc()
-        System.runFinalization()
-        System.gc()
-        Thread.sleep(1000)
-        collectGcStat3()
+    abstract void onMsg(String msg);
+
+    @Override
+    ObjectName getDefaultObjectName() throws MalformedObjectNameException {
+        return objectName
     }
 
-    static void collectGcStat3() {
-        List<GcInfoBean> gcInfoBeans = collectGcStat()
-        gcInfoBeans.findAll {it.bean.lastGcInfo.duration>5000 && (lastCheckDate ==null||it.lastRun.after(lastCheckDate))}.each {
-            String msg = "long gc duration = ${it.gcDuration} ms for ${it.bean.name} at ${it.lastRun.format('HH:mm:ss')}"
-            log.info "${msg}"
+    void printBadGc(GcInfoBean gcInfoBean) {
+        SimpleDateFormat sdf= new SimpleDateFormat('HH:mm:ss')
+        String msg = "long gc duration = ${gcInfoBean.gcDuration} ms for ${gcInfoBean.bean.name} at ${sdf.format(gcInfoBean.lastRun)}"
+        onMsg(msg)
+    }
+
+    boolean isBadGc(GcInfoBean it) {
+        if (it.bean.getLastGcInfo() == null) {
+            return false
         }
-        lastCheckDate = new Date()
+        return it.bean.lastGcInfo.duration > maxAllowedGcDurationMs && (lastCheckDate == null || it.lastRun.after(lastCheckDate))
+    }
+
+    GcInfoBean findOldGcInfoAndPrintStat() {
+        List<GcInfoBean> gcInfoBeans = getGcStat()
+        List<GcInfoBean> badGc = gcInfoBeans.findAll { isBadGc(it) };
+        badGc.each { printBadGc(it) }
+        GcInfoBean gcInfoBeanLong = findOldGcInfo(gcInfoBeans)
+        return gcInfoBeanLong;
+    }
+
+    GcInfoBean findOldGcInfo(List<GcInfoBean> gcInfoBeans) {
         GcInfoBean gcInfoBeanLong = gcInfoBeans.find { oldGens.contains(it.bean.name) }
-        if(gcInfoBeanLong==null){
-            throw new Exception("failed find old GC from ${gcInfoBeans.collect {it.bean.name}}")
+        if (gcInfoBeanLong == null) {
+            throw new Exception("failed find old GC from ${gcInfoBeans.collect { it.bean.name }}")
         }
+        return gcInfoBeanLong
+    }
+
+    MemoryInfoBean  getOldGenMemoryInfo() {
         MemoryPoolMXBean oldGen = ManagementFactory.getMemoryPoolMXBeans().find { oldGens2.contains(it.name) }
-        if(oldGen==null){
-            throw new Exception("failed find old gen from ${ManagementFactory.getMemoryPoolMXBeans().collect{it.name}}")
+        if (oldGen == null) {
+            throw new Exception("failed find old gen from ${ManagementFactory.getMemoryPoolMXBeans().collect { it.name }}")
         }
-        float  usedOldGen =oldGen.usage.used/oldGen.usage.max
-        log.info "${usedOldGen}"
-        log.info "${gcInfoBeanLong.lastRun}"
-        if( usedOldGen> 0.7){
-            if(gcInfoBeanLong.lastRun.getTime()>System.currentTimeMillis()-3600_000){
-                String msg  = "mem used ${usedOldGen} % ${oldGen.usage.used/1000_000} mb after big gc ${gcInfoBeanLong.lastRun}"
+        return convertToHuman(oldGen)
+    }
+
+    void collectGcStat3() {
+        lastCheckDate = new Date()
+        GcInfoBean gcInfoBeanLong = findOldGcInfoAndPrintStat()
+        MemoryInfoBean oldGen = getOldGenMemoryInfo()
+//        float usedOldGen = oldGen.usage.used / oldGen.usage.max
+//        log.info "${usedOldGen}"
+//        log.info "${gcInfoBeanLong.lastRun}"
+        if (oldGen.usedPercent > maxUsedOldGenPercent) {
+            if (gcInfoBeanLong.bean.getLastGcInfo() == null) {
+                log.info "high memory usage : ${oldGen.usedPercent} %, gc in old space was not run before"
+            } else {
+                if (gcInfoBeanLong.lastRun.getTime() > System.currentTimeMillis() - ignoreLongGcHappenedOlderThen) {
+                    String msg = "mem used ${oldGen.usedPercent} % ${oldGen.used / oneMegaByte} mb after big gc ${gcInfoBeanLong.lastRun}"
+                    onMsg(msg)
+                }
             }
         }
         log.info "gc check finished"
     }
 
+    List<MemoryInfoBean> getMemoryStat() {
+        List<MemoryPoolMXBean> beans = ManagementFactory.getMemoryPoolMXBeans()
+        List<MemoryInfoBean> res = beans.collect { convertToHuman(it) }
+        return res
+    }
 
-    static List<GcInfoBean> collectGcStat() {
+    MemoryInfoBean convertToHuman(MemoryPoolMXBean m) {
+        MemoryInfoBean memoryInfoBean = new MemoryInfoBean()
+        memoryInfoBean.nativeBean = m
+        MemoryUsage peakUsage = m.getPeakUsage()
+        MemoryUsage collectionUsage = m.getCollectionUsage()
+        MemoryUsage usage = m.getUsage()
+        memoryInfoBean.peek = m.getPeakUsage().getUsed()
+        memoryInfoBean.used = usage.getUsed()
+        memoryInfoBean.max = usage.getMax()
+        memoryInfoBean.name = m.getName()
+        memoryInfoBean.usedPercent = (100f*memoryInfoBean.used /memoryInfoBean.max) as float
+        return memoryInfoBean;
+
+    }
+
+
+    List<GcInfoBean> getGcStat() {
         List<GarbageCollectorMXBean> beans = ManagementFactory.getGarbageCollectorMXBeans()
-        List<GcInfoBean> gcInfoBeans = beans.collect { convert(it as com.sun.management.GarbageCollectorMXBean) }.findAll{it!=null}
+        List<GcInfoBean> gcInfoBeans = beans.collect { convert(it as com.sun.management.GarbageCollectorMXBean) };
+
+        gcInfoBeans = gcInfoBeans.findAll { it != null }
         return gcInfoBeans
     }
 
-    static GcInfoBean convert(com.sun.management.GarbageCollectorMXBean mxBean) {
+    GcInfoBean convert(com.sun.management.GarbageCollectorMXBean mxBean) {
         GcInfoBean bean = new GcInfoBean();
         GcInfo lastGcInfo = mxBean.getLastGcInfo()
-        if (lastGcInfo == null) {
-            return null
-        }
+        bean.gcName = mxBean.getName()
         bean.bean = mxBean
+        if (lastGcInfo == null) {
+            return bean
+        }
         bean.lastRun = new Date(lastGcInfo.getEndTime() + ManagementFactory.getRuntimeMXBean().getStartTime())
         Map<String, MemoryUsage> memoryUsageBeforeGc = lastGcInfo.getMemoryUsageBeforeGc()
         Map<String, MemoryUsage> memoryUsageAfterGc = lastGcInfo.getMemoryUsageAfterGc()
@@ -84,7 +144,7 @@ class MemoryStatCollector {
             instanceInfo.name = it.name
             instanceInfo.before = memoryUsageBeforeGc.get(it.name)
             instanceInfo.after = memoryUsageAfterGc.get(it.name)
-            BigDecimal diffToNowPercent2 =(it.usage.used - instanceInfo.after.used) / it.usage.max
+            BigDecimal diffToNowPercent2 = (it.usage.used - instanceInfo.after.used) / it.usage.max
             instanceInfo.diffToNowPercent = diffToNowPercent2.floatValue();
             BigDecimal freePercent2 = (instanceInfo.before.used - instanceInfo.after.used) / it.usage.max
             instanceInfo.freePercent = freePercent2.floatValue();
@@ -95,23 +155,18 @@ class MemoryStatCollector {
     }
 
 
-    @Test
-    void collectMemoryStat3() {
-        collectMemoryStat2()
-    }
-
-    static void collectMemoryStat2() {
+    void collectMemoryStat2() {
         List<MemoryPoolMXBean> beans = ManagementFactory.getMemoryPoolMXBeans()
         beans.each {
             MemoryUsage usage = it.usage
-            log.info "Memory ${it.name} usage : ${usage.used / 1000_000} mb"
+            log.info "Memory ${it.name} usage : ${usage.used / oneMegaByte} mb"
         }
 
 
     }
 
 
-    static List<MemoryPoolMXBean> collectMemoryStat(MbeanConnectionCreator connection) {
+    List<MemoryPoolMXBean> collectMemoryStat(MbeanConnectionCreator connection) {
 
         Set<ObjectInstance> memoryMbeans = connection.getMBeanServerConnection().queryMBeans(new ObjectName("java.lang:type=MemoryPool,*"), null); ;
         List<ObjectName> mbeans2 = memoryMbeans.collect { it.objectName }
@@ -122,7 +177,7 @@ class MemoryStatCollector {
     }
 
 
-    static void dumpMemoryStatus(List<MemoryPoolMXBean> memoryPoolMXBeans) {
+    void dumpMemoryStatus(List<MemoryPoolMXBean> memoryPoolMXBeans) {
         memoryPoolMXBeans.each {
             MemoryUsage usage = it.getUsage()
         }

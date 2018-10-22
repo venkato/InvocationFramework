@@ -1,6 +1,8 @@
 package net.sf.jremoterun.utilities.nonjdk.downloadutils
 
-import com.github.junrar.extract.ExtractArchive
+import com.github.junrar.Junrar
+//import com.github.junrar.Archive
+//import com.github.junrar.extract.ExtractArchive
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.MavenCommonUtils
@@ -72,14 +74,13 @@ class UrlDownloadUtils3 {
             log.info "already unarchived : ${f2}"
             return f2;
         }
-        String fileName = zipFile.name
+        String fileName = zipFile.getName()
         if (fileName.endsWith('.rar')) {
             // https://github.com/edmund-wagner/junrar
             // https://github.com/jukka/java-unrar
             // https://github.com/Albertus82/JUnRAR
             // https://github.com/asm-labs/junrar
-            ExtractArchive extractArchive = new ExtractArchive();
-            extractArchive.extractArchive(zipFile, f2);
+            Junrar.extract(zipFile, f2);
             return f2
         }
         FileType fileType = FileType.get(zipFile);
@@ -89,25 +90,10 @@ class UrlDownloadUtils3 {
         Archiver archiver = ArchiverFactory.createArchiver(zipFile)
 
         archiver.extract(zipFile, f2)
-        return f2
-    }
-
-
-    private File downloadUrlAndUnzipDel(URL url) {
-        File f = downloadUrl(url)
-        if (f.name.endsWith('.zip')) {
-            File f2 = new File(unzipDir, mcu.buildDownloadUrlSuffix(url))
-            if (f2.exists() && f2.listFiles().length > 0) {
-                log.info("already unziped ${f2}")
-                return f2
-            }
-            f2.mkdirs()
-            assert f2.exists()
-            ZipUtil.unpack(f, f2)
-            log.info "unzip done ${f2}"
-            return f2
+        if(!f2.exists()){
+            throw new Exception("failed unzip : ${zipFile}")
         }
-        return f
+        return f2
     }
 
 

@@ -78,7 +78,7 @@ abstract class GroovyShellRunner2 {
         JrrClassUtils.setFieldValue(Preferences, "STORE", overridenProps)
         overridenProps.props.put(PackageHelperImpl.IMPORT_COMPLETION_PREFERENCE_KEY, Boolean.TRUE.toString())
         log.info "initialiing packages .."
-        initializePackages = PackageHelperImpl.initializePackages(classLoaderDefault)
+        //initializePackages = PackageHelperImpl.initializePackages(classLoaderDefault)
         log.info "packages inited"
 
     }

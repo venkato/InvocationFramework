@@ -40,9 +40,18 @@ class IdeaPluginCompiler extends IfFrameworkCompiler {
     }
 
 
-    static void addIdeaCp(AddFilesToClassLoaderCommon adder,File ideaDir2){
-        adder.addAllJarsInDir new File(ideaDir2, "lib/")
-        adder.addAllJarsInDir new File(ideaDir2, 'plugins/Groovy/lib/');
+    static void addIdeaCp(AddFilesToClassLoaderCommon adder,File ideaDir){
+        assert ideaDir.exists()
+        adder.addAllJarsInDir new File(ideaDir, "plugins/git4idea/lib/")
+        adder.add new File(ideaDir, "plugins/github/lib/github.jar")
+        adder.add new File(ideaDir, "plugins/terminal/lib/terminal.jar")
+        adder.addAllJarsInDir new File(ideaDir, "lib/")
+        adder.addAllJarsInDir new File(ideaDir, 'plugins/Groovy/lib/');
+        adder.addAllJarsInDirAndSubdirs(new File(ideaDir, 'plugins/Kotlin/lib'))
+        File javaPlauginDir = new File(ideaDir, 'plugins/java/lib/');
+        if(javaPlauginDir.exists()){
+            adder.addAllJarsInDir(javaPlauginDir)
+        }
     }
 
 

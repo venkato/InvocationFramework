@@ -8,11 +8,17 @@ import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.JrrUtilities3
+import net.sf.jremoterun.utilities.NewValueListener
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
+import net.sf.jremoterun.utilities.classpath.MavenDependenciesResolver
 import net.sf.jremoterun.utilities.mdep.ivy.IvyDepResolver2
 import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.AddFileWithSources
 import net.sf.jremoterun.utilities.nonjdk.classpath.calchelpers.ClassPathCalculatorSup2Groovy
+import net.sf.jremoterun.utilities.nonjdk.ivy.IvyDepResolver3
+import net.sf.jremoterun.utilities.nonjdk.ivy.ManyReposDownloaderImpl
+import net.sf.jremoterun.utilities.nonjdk.ivy.OnRepoCreatedListener
 
+import java.util.logging.Level
 import java.util.logging.Logger
 
 @CompileStatic
@@ -65,27 +71,36 @@ class IdeaAddFileWithSources extends AddFileWithSources {
                         readyCallback.run()
                     }
                 } catch (Throwable e) {
-                    log.info "${e}"
-                    JrrUtilities.showException("Lib managed failed", e);
+                    importFailed.newValue(e);
                 }
             }
         }
         ProgressManager.getInstance().run(task);
     }
 
+    public static volatile NewValueListener<Throwable> importFailed = new NewValueListener<Throwable>() {
+        @Override
+        void newValue(Throwable throwable) {
+            log.log(Level.SEVERE,"Failed import",throwable)
+            JrrUtilities.showException("Failed import", throwable);
+        }
+    };
+
 
     IdeaIvyEvent prepare(File groovyClassPath, ProgressIndicator indicator) {
         IdeaClasspathLongTaskInfo longTaskInfo = new IdeaClasspathLongTaskInfo(indicator)
-        IvyDepResolver2 resolver = MavenDefaultSettings.mavenDefaultSettings.mavenDependenciesResolver as IvyDepResolver2
+        ManyReposDownloaderImpl resolver = MavenDefaultSettings.mavenDefaultSettings.mavenDependenciesResolver as ManyReposDownloaderImpl
+
         IdeaIvyEvent ideaIvyEvent = new IdeaIvyEvent(longTaskInfo);
-        resolver.ivy.eventManager.addIvyListener(ideaIvyEvent)
+        resolver.addIvyListener(ideaIvyEvent)
         try {
             import22(groovyClassPath)
         } finally {
-            resolver.ivy.eventManager.removeIvyListener(ideaIvyEvent)
+            resolver.removeIvyListener(ideaIvyEvent)
         }
         return ideaIvyEvent
     }
+
 
     void import22(File groovyClassPath) {
 

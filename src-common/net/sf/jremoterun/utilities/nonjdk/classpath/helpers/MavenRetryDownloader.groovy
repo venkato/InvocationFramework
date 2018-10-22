@@ -6,6 +6,7 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.MavenDependenciesResolver
 import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.classpath.MavenPath
+import net.sf.jremoterun.utilities.mdep.ivy.IBiblioRepository
 
 import java.util.logging.Logger
 @CompileStatic
@@ -68,6 +69,11 @@ class MavenRetryDownloader implements MavenDependenciesResolver {
     }
 
     @Override
+    List<MavenId> resolveAndDownloadDeepDependencies(MavenId mavenId, boolean downloadSource, boolean dep, IBiblioRepository repo) {
+        return resolveAndDownloadDeepDependencies(mavenId,downloadSource,dep)
+    }
+
+    @Override
     List<MavenId> resolveAndDownloadDeepDependencies(MavenId mavenId, boolean downloadSource, boolean dep) {
         int leftRetry = retryCount
         while (true) {
@@ -99,6 +105,11 @@ class MavenRetryDownloader implements MavenDependenciesResolver {
                 leftRetry--;
             }
         }
+    }
+
+    @Override
+    void downloadSource(MavenId mavenId, IBiblioRepository repo) {
+        downloadSource(mavenId)
     }
 
     @Override

@@ -1,8 +1,8 @@
 package net.sf.jremoterun.utilities.nonjdk.tcpmon;
 
 import groovy.transform.CompileStatic;
+import net.sf.jremoterun.utilities.JrrClassUtils;
 import net.sf.jremoterun.utilities.nonjdk.swing.MyTextArea;
-import org.apache.logging.log4j.LogManager;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
@@ -17,6 +17,8 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * a connection listens to a single current connection
@@ -24,7 +26,8 @@ import java.util.Date;
 @CompileStatic
 class Connection extends Thread {
 
-    private static final org.apache.logging.log4j.Logger log = LogManager.getLogger();
+    private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
+
 
     public Listener listener;
 
@@ -500,7 +503,7 @@ class Connection extends Thread {
             }
             outSocket = null;
         } catch (final Exception e) {
-            log.info("", e);
+            log.log(Level.INFO,"", e);
         }
     }
 
@@ -513,7 +516,7 @@ class Connection extends Thread {
             listener.tableModel.removeRow(index + 1);
             listener.connections.remove(index);
         } catch (final Exception e) {
-            log.info("index:=" + index + this, e);
+            log.log(Level.INFO,"index:=" + index + this, e);
         }
     }
 }

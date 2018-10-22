@@ -3,8 +3,7 @@ package net.sf.jremoterun.utilities.nonjdk.idwutils
 import groovy.transform.CompileStatic
 import net.infonode.docking.FloatingWindow
 import net.sf.jremoterun.utilities.JrrClassUtils
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+
 
 import javax.swing.JButton
 import javax.swing.JPanel
@@ -17,10 +16,12 @@ import java.awt.Insets
 import java.awt.Rectangle
 import java.awt.Toolkit
 import java.awt.Window
+import java.util.logging.Logger
 
 @CompileStatic
 public class IdwUtils2 {
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
+
 
 
     public static Window getRooWindow(Component component) {
@@ -35,7 +36,7 @@ public class IdwUtils2 {
         try {
             Window window = (Window) JrrClassUtils.getFieldValue(fw, "dialog");
             Rectangle screenWorkingArea = getScreenWorkingArea(window);
-            log.info(screenWorkingArea);
+            log.info(''+screenWorkingArea);
             window.setLocation(screenWorkingArea.@x, screenWorkingArea.@y);
             window.setSize(screenWorkingArea.@width, screenWorkingArea.@height);
             return true;

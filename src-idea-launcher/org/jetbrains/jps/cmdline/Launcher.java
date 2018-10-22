@@ -20,10 +20,6 @@ import net.sf.jremoterun.utilities.nonjdk.idea.laumcherbuild.LauncherImpl;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 
-/**
- * @author Eugene Zhuravlev
- * Date: 9/27/13
- */
 public class Launcher {
 
     public static void main(String[] args) throws Exception {

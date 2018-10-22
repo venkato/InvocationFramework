@@ -28,7 +28,7 @@ class IdeaBRunner21 extends InjectedCode {
         return null
     }
 
-    void f1(File ifBaseDir) {
+    static void f1(File ifBaseDir) {
         log.info "loading framework"
         assert ifBaseDir.exists()
         adder.add ifBaseDir.child("src-frameworkloader")

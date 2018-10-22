@@ -1,10 +1,14 @@
 package net.sf.jremoterun.utilities.nonjdk.idea
 
 import com.intellij.ide.plugins.cl.PluginClassLoader
+import com.intellij.util.lang.UrlClassLoader
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.JrrUtils
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.UrlToFileConverter
+import net.sf.jremoterun.utilities.nonjdk.idea.init.IdeaClasspathAdd
 
+import java.nio.file.Path
 import java.util.logging.Logger
 
 /**
@@ -33,7 +37,18 @@ public class AddJrrLibToCommonIdeaClassloader2 {
 
         URL classLocation = JrrUtils.getClassLocation(JrrUtils);
         log.info "JrrUtils location : ${classLocation}"
-        JrrClassUtils.invokeJavaMethod(classLoader3, "addURL", classLocation);
+        boolean added = false;
+        if(classLoader3 instanceof UrlClassLoader){
+            if(IdeaClasspathAdd.addFileMethod!=null){
+                File f = UrlToFileConverter.c.convert(classLocation);
+                List<Path> paths = [f.toPath()];
+                IdeaClasspathAdd.addFileMethod.invoke(classLoader3,paths);
+                added = true;
+            }
+        }
+        if(!added) {
+            JrrClassUtils.invokeJavaMethod(classLoader3, "addURL", classLocation);
+        }
         log.info("AddJrrLibToCommonIdeaClassloader done");
     }
 

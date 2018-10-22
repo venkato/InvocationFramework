@@ -1,3 +1,5 @@
+import net.sf.jremoterun.utilities.classpath.ClRef
+
 import java.util.*;
 import net.sf.jremoterun.utilities.nonjdk.rstarunner.RstaRunner;
 import net.sf.jremoterun.utilities.nonjdk.rstarunner.RstaScriptHelper;
@@ -13,5 +15,7 @@ class RstaRunner2 extends RstaScriptHelper {
 		Thread.sleep(10_000);
 		runner2.status = "${runner2.stopFlag}";
 		Thread t;
+		// used in :
+		new ClRef('net.sf.jremoterun.utilities.nonjdk.rstarunner.RstaTester')
 	}
 }

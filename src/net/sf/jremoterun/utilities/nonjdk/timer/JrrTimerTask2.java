@@ -13,7 +13,7 @@ import java.util.Vector;
 
 public class JrrTimerTask2 {
 
-	private static final Logger log = LogManager.getLogger();
+
 
 	public Object lock = new Object();
 

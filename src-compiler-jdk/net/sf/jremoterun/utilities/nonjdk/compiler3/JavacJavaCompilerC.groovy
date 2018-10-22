@@ -26,7 +26,7 @@ class JavacJavaCompilerC extends JavacJavaCompiler{
     @Override
     void compile(List<String> files, CompilationUnit cu) {
         Map options = config2.getJointCompilationOptions();
-        def object = options.get('flags')
+        //def object = options.get('flags')
 //        log.info "flags : ${object}"
         super.compile(files, cu)
     }

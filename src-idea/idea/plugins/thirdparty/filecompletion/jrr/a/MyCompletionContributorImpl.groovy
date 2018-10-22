@@ -7,7 +7,6 @@ import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
-import org.jetbrains.annotations.NotNull
 
 /**
  * Reserved for future flexibility
@@ -18,6 +17,6 @@ class MyCompletionContributorImpl extends CompletionContributor {
     private static final Logger log = LogManager.getLogger(JrrClassUtils.currentClass);
 
     @Override
-    public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
+    public void fillCompletionVariants(CompletionParameters parameters, CompletionResultSet result) {
     }
 }

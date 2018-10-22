@@ -37,9 +37,32 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
 
     }
 
+    GroovyShellGuiRSyntaxTextArea textAreaRunner = this;
+//            new GroovyShellGuiRSyntaxTextArea(){
+//
+//        @Override
+//        void additionalHilighter() {
+//            super.additionalHilighter()
+//            RstaRunner.this.additionalHilighter()
+//        }
+//
+//        @Override
+//        void codeStopped() {
+//            super.codeStopped()
+//            RstaRunner.this.codeStopped()
+//        }
+//
+//        @Override
+//        void codeStarted() {
+//            super.codeStarted()
+//            RstaRunner.this.codeStarted();
+//        }
+//    }
+
     JButton runButton = new JButton(RunnerStatus.Run.name())
     JButton saveToFileButton = new JButton("Save to file")
     Thread thread;
+    boolean onStopCallInterrupt;
     boolean runInSwingThread = false;
     JTextField progressLable = new JTextField() {
 
@@ -50,6 +73,17 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
 
     }
 
+//    void codeStarted(){
+//
+//    }
+
+//    void codeStopped(){
+//
+//    }
+
+//    void additionalHilighter() {
+//
+//    }
 
     Component getMainPanel() {
         return panel
@@ -57,7 +91,7 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
 
 
     boolean requestFocusInWindow2() {
-        return getComponent().requestFocusInWindow()
+        return textAreaRunner.getComponent().requestFocusInWindow()
     }
 
     ClassLoader classLoader2 = JrrClassUtils.getCurrentClassLoader()
@@ -69,39 +103,56 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
 //    RunnerStatus runnerStatus = RunnerStatus.Stop
 
     public Runnable codeFinisedFineListener;
-    //File file
+
+    public File fileWithConfig
 
     RstaRunner(File file) {
-        this(file.text)
+        this(checkFileExist2(file).text)
+        fileWithConfig = file
         panelButtons.add(saveToFileButton)
         saveToFileButton.addActionListener {
-            file.text = getText();
+            fileWithConfig.text = textAreaRunner.textArea.getTextNormalized();
         }
+    }
+
+
+    static File checkFileExist2(File file){
+        JrrUtilities.checkFileExist(file)
+        if(!file.isFile()){
+            throw new IOException("Bad file : ${file}")
+        }
+        return file
     }
 
     RstaRunner(String text2) {
         super()
         runButton.setMnemonic(KeyEvent.VK_R);
         panel.add(panelButtons, BorderLayout.NORTH)
-        panel.add(getComponent(), BorderLayout.CENTER)
+        panel.add(textAreaRunner.getComponent(), BorderLayout.CENTER)
         progressLable.setEditable(false)
         progressLable.setColumns(20)
         panelButtons.add(progressLable)
         panelButtons.add(runButton)
         addLangSupport()
-        setText(text2)
+        textAreaRunner.textArea.setText(text2)
         runButton.addActionListener {
             runButtonPressed()
         }
     }
 
-    private void prepareAndRun2() {
+
+//    @Override
+//    public void addLangSupport() throws Exception {
+//        textArea.addLangSupport()
+//    }
+
+    void prepareAndRun2(Object param) {
         stopFlag = false;
-        prepareAndRun()
+        textAreaRunner.prepareAndRun()
         progressLable.text = ""
-        runButton.enabled = false
+        runButton.setEnabled(false)
         Runnable r = {
-            runCode()
+            runCode(param)
         }
         if (runInSwingThread) {
             r.run()
@@ -112,6 +163,12 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
 
     }
 
+    void enableButtons(){
+
+    }
+    void disableButtons(){
+
+    }
 
     private void runButtonPressed() {
         log.fine("Start time : ${new Date()}");
@@ -121,14 +178,28 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
             case RunnerStatus.Stop:
                 runButton.setText(RunnerStatus.Stoping.name());
                 runButton.setEnabled(false);
-                stopFlag = true;
+                onStopRequest()
                 break;
             case RunnerStatus.Run:
-                prepareAndRun2();
+                prepareAndRun2(null);
                 break;
             case RunnerStatus.Stoping:
                 log.info("still stopping");
                 break;
+        }
+    }
+
+    void onStopRequest(){
+        stopFlag = true;
+        if(onStopCallInterrupt) {
+            interruptThread();
+        }
+    }
+
+    void interruptThread(){
+        Thread thread2 = thread;
+        if(thread2!=null && thread2!= Thread.currentThread()) {
+            thread2.interrupt();
         }
     }
 
@@ -139,35 +210,42 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
         }
     }
 
-    void runCode() {
+    // t:dual
+    String getTextToRun(){
+        return textAreaRunner.textArea.getTextNormalized()
+    }
+
+    void runCode(Object param) {
         try {
-            String text2 = getText().replace("\r\n", "\n").replace("\r", "\n");
+            StopRequestIndicator.stopRequest.set(this)
+            String text2 = getTextToRun();
             Thread.currentThread().setContextClassLoader(classLoader2);
             GroovyClassLoader classLoader = createGroovyClassLoader();
             Thread.currentThread().setContextClassLoader(classLoader);
-            String genClassName = generatedClassName
+            String genClassName = textAreaRunner.generatedClassName
             if (genClassName == null) {
                 genClassName = 'script' + System.currentTimeMillis() +
-                        Math.abs(text.hashCode()) + '.groovy'
+                        Math.abs(text2.hashCode()) + '.groovy'
             }
-            generatedClassName = genClassName
+            textAreaRunner.generatedClassName = genClassName
             Class parseClass = classLoader.parseClass(text2, genClassName);
 //            Thread.currentThread().setContextClassLoader(parseClass.getClassLoader());
-            generatedClassName = parseClass.getName()
-            codeStarted()
-            runGroovyClass(parseClass)
+            textAreaRunner.generatedClassName = parseClass.getName()
+            textAreaRunner.codeStarted()
+            runGroovyClass(parseClass,param)
             if (codeFinisedFineListener != null) {
                 codeFinisedFineListener.run()
             }
-            codeStopped()
+            textAreaRunner.codeStopped()
         } catch (Throwable e) {
-            codeStopped()
+            textAreaRunner.codeStopped()
             JrrUtilities.showException("", e)
             SwingUtilities.invokeLater { parseException(e) }
         } finally {
             SwingUtilities.invokeLater {
-                runButton.enabled = true
+                runButton.setEnabled( true)
                 runButton.setText(RunnerStatus.Run.name())
+                enableButtons()
             }
         }
     }
@@ -185,18 +263,18 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
         if (e2 instanceof MultipleCompilationErrorsException) {
             MultipleCompilationErrorsException f1 = (MultipleCompilationErrorsException) e2;
             ErrorCollector errorCollector = f1.getErrorCollector();
-            java.util.List<Message> errors = errorCollector.getErrors();
+            java.util.List<Message> errors = (List)errorCollector.getErrors();
             if (errors.size() > 0) {
                 Message message = errors.get(0);
                 if (message instanceof SyntaxErrorMessage) {
                     SyntaxErrorMessage syntaxErrorMessage = (SyntaxErrorMessage) message;
                     SyntaxException cause = syntaxErrorMessage.getCause();
-                    log.info "${cause.getSourceLocator()} ${generatedClassName}"
-                    if (generatedClassName == cause.getSourceLocator()) {
+                    log.info "${cause.getSourceLocator()} ${textAreaRunner.generatedClassName}"
+                    if (textAreaRunner.generatedClassName == cause.getSourceLocator()) {
                         int line = cause.getStartLine();
                         log.info "${line}"
                         line += -1;
-                        highLightLineAsError(line);
+                        textAreaRunner.highLightLineAsError(line);
                         return
                     } else {
                         log.info("ignore SyntaxException as another groovy script : " + cause.getSourceLocator());
@@ -208,17 +286,17 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
         StackTraceElement[] stackTraces = rootException.getStackTrace();
         final int lineNumber2 = getLineNumberFromStackTrace4(stackTraces);
         if (lineNumber2 != -1) {
-            highLightLineAsError(lineNumber2);
+            textAreaRunner.highLightLineAsError(lineNumber2);
         }
     }
 
     int getLineNumberFromStackTrace4(StackTraceElement[] stackTraces) {
-        if(generatedClassName==null ||generatedClassName.length()==0){
+        if(textAreaRunner.generatedClassName==null ||textAreaRunner.generatedClassName.length()==0){
             return -1;
         }
         StackTraceElement stackTraceElementF = null;
         for (StackTraceElement stackTraceElement : stackTraces) {
-            if (stackTraceElement.getClassName().startsWith(generatedClassName)) {
+            if (stackTraceElement.getClassName().startsWith(textAreaRunner.generatedClassName)) {
                 stackTraceElementF = stackTraceElement;
                 break;
             }
@@ -232,7 +310,7 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
         return -1;
     }
 
-    private Object runGroovyClass(Class scriptClass) throws Exception {
+    Object runGroovyClass(Class scriptClass,Object param) throws Exception {
         groovyScriptObject = scriptClass.newInstance() as RstaScriptHelper;
         groovyScriptObject.runner = this;
         assert groovyScriptObject.runner != null
@@ -242,13 +320,18 @@ class RstaRunner extends GroovyShellGuiRSyntaxTextArea {
             if (runButton.isEnabled()) {
                 log.info("not enabled ${runButton.getText()}")
             } else {
+                disableButtons()
                 runButton.setText(RunnerStatus.Stop.name());
                 runButton.setEnabled(true)
             }
         }
-
+        preRunAfterScriptLoaded()
         groovyScriptObject.run()
         return null;
+    }
+
+    void preRunAfterScriptLoaded(){
+
     }
 
 

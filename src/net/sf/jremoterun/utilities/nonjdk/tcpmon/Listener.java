@@ -2,10 +2,10 @@ package net.sf.jremoterun.utilities.nonjdk.tcpmon;
 
 import groovy.transform.CompileStatic;
 import net.infonode.docking.*;
+import net.sf.jremoterun.utilities.FileOutputStream2;
+import net.sf.jremoterun.utilities.JrrClassUtils;
 import net.sf.jremoterun.utilities.nonjdk.idwutils.IdwUtils;
 import net.sf.jremoterun.utilities.nonjdk.idwutils.MyDockingWindowTitleProvider;
-import net.sf.jremoterun.utilities.FileOutputStream2;
-import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -25,6 +25,8 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * this is one of the tabbed panels that acts as the actual proxy
@@ -32,7 +34,8 @@ import java.util.Vector;
 @CompileStatic
 public class Listener {
 
-    private static final org.apache.logging.log4j.Logger log = LogManager.getLogger();
+    private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
+
 
     public final JComboBox reqStyle = new JComboBox(new Vector(
             Tcpmon.syntaxisFields.keySet()));
@@ -520,7 +523,7 @@ public class Listener {
             tPortField.setEditable(true);
             isProxyBox.setEnabled(true);
         } catch (final Exception e) {
-            log.info("", e);
+            log.log(Level.INFO,"", e);
         }
     }
 
@@ -607,7 +610,7 @@ public class Listener {
 
                 out.close();
             } catch (final Exception e) {
-                log.info("", e);
+                log.log(Level.INFO,"", e);
             }
         }
     }
@@ -635,7 +638,7 @@ public class Listener {
 
             // Fix Content-Length HTTP headers
             if (text.startsWith("POST ") || text.startsWith("GET ")) {
-                log.warn("IN CL");
+                log.warning("IN CL");
                 int pos1, pos2, pos3;
                 final String body;
                 String headers;
@@ -681,7 +684,7 @@ public class Listener {
             connection.setOutputTextStyle(conn.outputText
                     .getSyntaxEditingStyle());
         } catch (final Exception e) {
-            log.info("", e);
+            log.log(Level.INFO,"", e);
         }
     }
 }

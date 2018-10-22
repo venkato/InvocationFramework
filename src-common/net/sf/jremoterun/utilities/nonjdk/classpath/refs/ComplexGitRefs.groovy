@@ -8,7 +8,7 @@ import net.sf.jremoterun.utilities.nonjdk.git.ToFileRefRedirect
 @CompileStatic
 enum ComplexGitRefs implements ToFileRefRedirect {
 
-    eclipseGithubApiB(new BinaryWithSource2(LatestMavenIds.eclipseGitHubApi.m, GitReferences.eclipseGithubApi));
+    eclipseGithubApiB(new BinaryWithSource2(MavenIdAndRepoCustom.eclipseGitHubApi, GitReferences.eclipseGithubApi));
 
 
     ToFileRef2 ref

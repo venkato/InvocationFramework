@@ -5,6 +5,7 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.classpath.CustomObjectHandler
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import net.sf.jremoterun.utilities.nonjdk.git.GitSpec
@@ -57,7 +58,7 @@ class RstaMainCompiler   {
     File dist;
 
     File zip() {
-        FileUtils.copyDirectory(new File(repoBase,'src/main/resources'),compilerPure.outputDir)
+        FileUtilsJrr.copyDirectory(new File(repoBase,'src/main/resources'),compilerPure.outputDir)
         dist = new File(repoBase,'build/rsta.jar');
         dist.parentFile.mkdir()
         assert dist.parentFile.exists()

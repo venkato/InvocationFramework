@@ -1,6 +1,11 @@
 package net.sf.jremoterun.utilities.nonjdk.timer;
 
+import groovy.transform.CompileStatic;
+
+@CompileStatic
 public class WaitNotifyMethods {
+
+
 
     public static void wait(final Object lock) throws InterruptedException {
         lock.wait();
@@ -18,12 +23,6 @@ public class WaitNotifyMethods {
         lock.notifyAll();
     }
 
-    public static boolean isNull(Object object) {
-        return object == null;
-    }
 
-    public static void print(String msgs) {
-        System.out.println(msgs);
-    }
 
 }

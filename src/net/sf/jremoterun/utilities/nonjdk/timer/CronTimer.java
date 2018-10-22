@@ -30,6 +30,12 @@ public class CronTimer extends TimerController implements CronTimerMBean {
 
 	private List<CronExpression> cronExpressions;
 
+
+	public CronTimer(final Runnable task) {
+		this.task = task;
+		// this.cronExpressions = cronExpression;
+	}
+
 	public void start() {
 		if (timer.isTimerRunning()) {
 			// log.warn("timer is running");
@@ -82,10 +88,6 @@ public class CronTimer extends TimerController implements CronTimerMBean {
 		timer.reEvauateNextRun();
 	}
 
-	public CronTimer(final Runnable task) {
-		this.task = task;
-		// this.cronExpressions = cronExpression;
-	}
 
 	@Override
 	protected Date isRunNow() {

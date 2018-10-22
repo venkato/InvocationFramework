@@ -43,7 +43,7 @@ class JrrConfigGenerator implements ClassNameSynonym{
     void generateConfig(boolean raw, boolean userConfig, boolean overrideFile) {
         String s = configText
         if (s == null) {
-            s = readText('jrrgroovyconfig_raw.groovy')
+            s = readText(JrrStarterConstatnts.rawConfigFileName)
         }
         File jrrConfigDir = getJrrConfigDir()
         String className3
@@ -65,7 +65,7 @@ class JrrConfigGenerator implements ClassNameSynonym{
                 f = JrrStarterConstatnts.configFileName as File
             }
         }
-        String fileContent = s.replace('jrrgroovyconfig_raw', className3)
+        String fileContent = s.replace(JrrStarterConstatnts.rawConfigFileName, className3)
         if (f.exists() && !overrideFile) {
             throw new IOException("file exist : ${f.absolutePath}")
         }

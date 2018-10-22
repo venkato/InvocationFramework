@@ -21,16 +21,18 @@ class ConsoleRedirect {
     public static volatile Exception creationCallStack;
 
 
-    static void setOutputWithRotationAndFormatter(File outFile, int maxDepth) {
-        setOutputWithRotation(outFile, maxDepth)
+    static FileOutputStream2 setOutputWithRotationAndFormatter(File outFile, int maxDepth) {
+        FileOutputStream2 outputStream2 = setOutputWithRotation(outFile, maxDepth)
         JdkLogFormatter.setLogFormatter()
+        return outputStream2
     }
 
-    static void setOutputWithRotation(File outFile, int maxDepth) {
+    static FileOutputStream2 setOutputWithRotation(File outFile, int maxDepth) {
         SetConsoleOut2.setConsoleOutIfNotInited()
         FileRotate.rotateFile(outFile, maxDepth)
-        setOutputToConsoleAndFile(outFile)
+        FileOutputStream2 outputStream2 = setOutputToConsoleAndFile(outFile)
         setOutputForConsleHandler(SetConsoleOut2.proxyOut)
+        return outputStream2
     }
 
     static void setOutputForConsleHandler(OutputStream outputStream) {
@@ -41,24 +43,25 @@ class ConsoleRedirect {
         }
     }
 
-    static void setOutputToConsoleAndFile(File out) {
-        setOutputToConsoleAndFile3(out)
+    static FileOutputStream2 setOutputToConsoleAndFile(File out) {
+        return setOutputToConsoleAndFile3(out)
     }
 
-    static void setOutputToConsoleAndFile3(File out) {
+    static FileOutputStream2 setOutputToConsoleAndFile3(File out) {
         if (outputFile != null) {
             log.warn("Output redirection was set before in ", creationCallStack)
             throw new IllegalStateException("Output redirection was set before : ${outputFile}")
         }
-        setOutputToConsoleAndFileImpl(out)
+        return setOutputToConsoleAndFileImpl(out)
     }
 
-    static void setOutputToConsoleAndFileImpl(File out) {
+    static FileOutputStream2 setOutputToConsoleAndFileImpl(File out) {
         JrrUtilities3.checkFileExist(out.parentFile)
         FileOutputStream2 out2 = new FileOutputStream2(out, false);
         RedirectOutStream.addOutStream out2
         outputFile = out
         creationCallStack = new Exception("Creation call stack")
+        return out2;
     }
 
 }

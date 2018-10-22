@@ -1,5 +1,8 @@
 package idea.plugins.thirdparty.filecompletion.jrr.a.file
 
+import com.intellij.lang.jvm.JvmMember
+import com.intellij.lang.jvm.JvmTypeDeclaration
+import com.intellij.lang.jvm.types.JvmReferenceType
 import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.ElementPatternCondition
 import com.intellij.psi.PsiClass
@@ -8,20 +11,28 @@ import com.intellij.psi.PsiCompiledElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiExpression
 import com.intellij.psi.PsiField
+import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiJavaToken
 import com.intellij.psi.PsiLiteral
 import com.intellij.psi.PsiLiteralExpression
 import com.intellij.psi.PsiNewExpression
 import com.intellij.psi.PsiReferenceExpression
 import com.intellij.psi.PsiType
+import com.intellij.psi.PsiVariable
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.impl.source.tree.java.PsiJavaTokenImpl
 import com.intellij.util.ProcessingContext
 import groovy.transform.CompileStatic
 import idea.plugins.thirdparty.filecompletion.jrr.IdeaMagic
 import idea.plugins.thirdparty.filecompletion.jrr.a.remoterun.JrrIdeaBean
+import idea.plugins.thirdparty.filecompletion.jrr.librayconfigurator.FieldResolvedDirectly
+import idea.plugins.thirdparty.filecompletion.jrr.librayconfigurator.FieldResolvedDirectlyMoreComplex
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.classpath.CustomObjectHandler
+import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.nonjdk.TwoResult
+import net.sf.jremoterun.utilities.nonjdk.git.GitSpec
+import net.sf.jremoterun.utilities.nonjdk.git.SvnSpec
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
 import org.jetbrains.annotations.Nullable
@@ -34,9 +45,11 @@ import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrExpres
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrNewExpression
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrReferenceExpression
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrSafeCastExpression
+import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.literals.GrLiteral
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.path.GrMethodCallExpression
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.typedef.members.GrAccessorMethod
 import org.jetbrains.plugins.groovy.lang.psi.impl.GrClassReferenceType
+import org.jetbrains.plugins.groovy.lang.psi.impl.statements.expressions.GrNewExpressionImpl
 import org.jetbrains.plugins.groovy.lang.psi.impl.statements.expressions.GrReferenceExpressionImpl
 
 @CompileStatic
@@ -137,10 +150,9 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
             }
 
         }
-//        log.info "cp 1 : ${parent1.class.name} ${parent1}"
+
         if (parent2 instanceof GrMethodCallExpression) {
             File file = fileViaFileChildMethod(parent2, false)
-//            log.info "cp 2 : ${file}"
             if (file != null) {
                 completionBean.wholeFileDeclaration = parent1
                 completionBean.parentFilePath = file
@@ -157,7 +169,7 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
      * Example : File parent = new File('/opt');
      * use parent somewhere. This method calc path for parent var
      */
-    static File findFileFromVarGeneric(PsiElement varRef) {
+    static File findFileFromVarGeneric(final PsiElement varRef) {
         if (varRef == null) {
             log.warn("ref is null", new Exception())
             return null
@@ -165,6 +177,10 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
         if (varRef instanceof GrReferenceExpression) {
             // may be use resolve ?
             // varRef.resolve()
+            File result = FieldResolvedDirectlyMoreComplex.fieldResolvedDirectlyMoreComplex.tryResolveFileViaGrRef(varRef)
+            if(result!=null){
+                return result;
+            }
             GroovyResolveResult[] variants = varRef.getSameNameVariants()
             if (variants == null) {
                 log.debug "variants is null"
@@ -186,6 +202,10 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
             return findFileFromVarGeneric(element)
         }
         if (varRef instanceof PsiReferenceExpression) {
+            File result = FieldResolvedDirectlyMoreComplex.fieldResolvedDirectlyMoreComplex.tryResolveFileViaJavaRef(varRef)
+            if(result!=null){
+                return result;
+            }
             PsiElement resolve = varRef.resolve()
             if (resolve == null) {
                 log.info "failed resolve ${varRef}"
@@ -198,7 +218,11 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
             return findFileFromVarGeneric(resolve)
         }
         if (varRef instanceof GrField) {
-            GrExpression gr1 = varRef.initializerGroovy
+            File result = FieldResolvedDirectlyMoreComplex.fieldResolvedDirectlyMoreComplex.tryResolveFile(varRef)
+            if(result!=null){
+                return result
+            }
+            GrExpression gr1 = varRef.getInitializerGroovy()
             if (gr1 == null) {
                 log.debug "null init for ${varRef}"
                 return null
@@ -206,10 +230,17 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
             return findFileFromVarGeneric(gr1)
         }
         if (varRef instanceof PsiField) {
+            PsiClass containingClass = varRef.getContainingClass()
+            String name = varRef.getName()
+            String cassName = containingClass.getQualifiedName()
+            boolean canResolve = FieldResolvedDirectly.fieldResolvedDirectly.canResolve(cassName,name)
+            if(canResolve){
+                return FieldResolvedDirectly.fieldResolvedDirectly.resolveValue(cassName,name)
+            }
             return javaFindFileFromField(varRef)
         }
         if (varRef instanceof GrVariable) {
-            GrExpression gr1 = varRef.initializerGroovy
+            GrExpression gr1 = varRef.getInitializerGroovy()
             if (gr1 == null) {
                 log.debug "null init for ${varRef}"
                 return null
@@ -217,7 +248,7 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
             return findFileFromVarGeneric(gr1)
         }
         if (varRef instanceof GrAccessorMethod) {
-            PsiElement navigationElement = varRef.navigationElement
+            PsiElement navigationElement = varRef.getNavigationElement()
             if (navigationElement == null) {
                 log.info "navigation el is null"
             } else {
@@ -244,16 +275,7 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
 
         log.debug "not a GrVar : ${varRef.class} ${varRef}"
         return null;
-
     }
-
-//    private static File findFileFromGrExpressionCommon(GrExpression initializerGroovy) {
-//        log.debug "not a new expression"
-//        return null;
-////        log.debug "varRef no ${varRef.class.name} ${varRef}"
-//
-//    }
-
 
     static String getStringFromPsiLiteral(PsiElement psiElement) {
         if (!(psiElement instanceof PsiLiteral)) {
@@ -287,13 +309,13 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
      */
     private
     static TwoResult<Boolean, File> fileViaGrNewExpression(GrNewExpression grExpression) {
-        PsiType type = grExpression.type;
+        PsiType type = grExpression.getType();
         if (!(type instanceof GrClassReferenceType)) {
             return null
         }
         PsiClass resolve = type.resolve()
 
-        if (resolve == null || !(resolve.name.contains('File'))) {
+        if (resolve == null || !(resolve.getName().contains('File'))) {
             log.debug("accpted")
             return null
         }
@@ -338,8 +360,6 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
         }
         PsiExpression[] argsExpressions = grExpression.argumentList.expressions
         if (argsExpressions.length == 1) {
-//            FileCompletionBean fileCompletionBean = new FileCompletionBean()
-//            fileCompletionBean.value = value2
             return new TwoResult<Boolean, File>(true, null);
         }
         if (argsExpressions.length == 2) {
@@ -380,9 +400,6 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
                 return null;
             }
             return new File(value2)
-//            FileCompletionBean fileCompletionBean = new FileCompletionBean()
-//            fileCompletionBean.value = value2
-
         }
         if (argsExpressions.length != 2) {
             log.debug "too many args"
@@ -536,6 +553,175 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
     }
 
 
+    private static File resolveToFileMethod(GrMethodCallExpression grExpression) {
+        // invokedExpression = GitReferences.purejavacommTraffSrc.resolveToFile()
+        GrReferenceExpressionImpl invokedExpression = grExpression.invokedExpression as GrReferenceExpressionImpl
+        String methodName = invokedExpression.getReferenceName()
+        assert methodName == SpecialMethodName.resolveToFile.name()
+        // firstChild  = GitReferences.purejavacommTraffSrc;
+        PsiElement firstChild = invokedExpression.getFirstChild()
+        if (!(firstChild instanceof GrReferenceExpression)) {
+            log.info "not GrRef"
+            return null
+        }
+        // child2 = GitReferences
+        PsiElement child2 = firstChild.getFirstChild()
+        if (!(child2 instanceof GrReferenceExpression)) {
+            log.info "firstChild no psi : ${child2}"
+            return null
+        }
+        PsiElement psiField = firstChild.resolve()
+        if (!(psiField instanceof PsiField)) {
+            log.info("not psi field : ${psiField}")
+            return  null
+        }
+        PsiField psiVar = psiField as PsiField
+        PsiClass containingClass = psiVar.getContainingClass()
+//        PsiType type1 = psiVar.getType()
+//        if (!(type1 instanceof PsiClass)) {
+//            log.info("not psi class : ${type1}")
+//            return null
+//        }
+//        PsiClass psiClass = type1 as PsiClass
+        String className1 = containingClass.getQualifiedName();
+        PsiIdentifier pi = psiVar.getNameIdentifier();
+        String fieldName =     pi.getText();
+        boolean canResolveB=FieldResolvedDirectly.fieldResolvedDirectly.canResolveEnum(className1);
+        if(!canResolveB){
+            log.info "not in scope : ${className1}"
+            return null
+        }
+
+        Object fieldValue = FieldResolvedDirectly.fieldResolvedDirectly.resolveValue2(className1, fieldName);
+//        if (!(fieldValue instanceof GitSpec)) {
+//            log.info "not git spec : ${fieldValue}"
+//            return null
+//        }
+        CustomObjectHandler handler = MavenDefaultSettings.mavenDefaultSettings.customObjectHandler
+        if(handler==null){
+            throw new IllegalStateException("customObjectHandler was not set")
+        }
+        File f =  handler.resolveToFileIfDownloaded(fieldValue)
+        log.info "resolved : ${f}"
+        return f
+    }
+
+    private static File childLazyMethodResolveParent(PsiElement firstChild ) {
+        if (firstChild instanceof GrNewExpressionImpl) {
+            PsiType type = firstChild.getType();
+            if (!(type instanceof GrClassReferenceType)) {
+                return null
+            }
+            PsiClass resolve = type.resolve()
+
+            if (resolve == null) {
+                log.info "not  git spec 1 ${type}"
+                return null
+            }
+            boolean isSvnSpec= false;
+            if (!(resolve.getName().contains(GitSpec.getSimpleName()))) {
+                log.info("not  git spec: ${resolve}")
+                if(resolve.getName().contains(SvnSpec.getSimpleName())){
+                    isSvnSpec = true
+                }else {
+                    return null
+                }
+            }
+            GrArgumentList args = firstChild.getArgumentList()
+            GroovyPsiElement[] arguments = args.getAllArguments()
+            if (arguments == null || arguments.length != 1) {
+                log.info "bad args : ${arguments}"
+                return null
+            }
+            GroovyPsiElement firstArg = arguments[0]
+            if (firstArg instanceof GrLiteral) {
+                GrLiteral literal = (GrLiteral) firstArg;
+                String  gitRefValue = literal.getValue()
+                CustomObjectHandler handler = MavenDefaultSettings.mavenDefaultSettings.customObjectHandler
+                if(handler==null){
+                    throw new IllegalStateException("customObjectHandler was not set")
+                }
+                Object gitSpec;
+                if(isSvnSpec){
+                    gitSpec = new SvnSpec(gitRefValue)
+                }else{
+                    gitSpec = new GitSpec(gitRefValue)
+                }
+                File f =  handler.resolveToFileIfDownloaded(gitSpec)
+                if(f==null){
+                    log.info "failed resolved ${gitSpec}"
+                }
+                return f;
+            }
+        }
+        if (!(firstChild instanceof GrReferenceExpression)) {
+            log.info "not GrRef ${firstChild.getClass()} ${firstChild}"
+            return null
+        }
+        // child2 = GitReferences
+        PsiElement child2 = firstChild.getFirstChild()
+        if (!(child2 instanceof GrReferenceExpression)) {
+            log.info "firstChild no psi : ${child2}"
+            return null
+        }
+        PsiElement psiField = firstChild.resolve()
+        if (!(psiField instanceof PsiField)) {
+            log.info("not psi field : ${psiField}")
+            return null
+        }
+        PsiField psiVar = psiField as PsiField
+        PsiClass containingClass = psiVar.getContainingClass()
+//        PsiType type1 = psiVar.getType()
+//        if (!(type1 instanceof PsiClass)) {
+//            log.info("not psi class : ${type1}")
+//            return null
+//        }
+//        PsiClass psiClass = type1 as PsiClass
+        String className1 = containingClass.getQualifiedName();
+        PsiIdentifier pi = psiVar.getNameIdentifier();
+        String fieldName = pi.getText()
+        boolean canResolveB = FieldResolvedDirectly.fieldResolvedDirectly.canResolveEnum(className1)
+        if (!canResolveB) {
+            log.info "not in scope : ${className1}"
+            return null
+        }
+
+        Object fieldValue = FieldResolvedDirectly.fieldResolvedDirectly.resolveValue2(className1, fieldName);
+//        if (!(fieldValue instanceof GitSpec)) {
+//            log.info "not git spec : ${fieldValue}"
+//            return null
+//        }
+        CustomObjectHandler handler = MavenDefaultSettings.mavenDefaultSettings.customObjectHandler
+        if (handler == null) {
+            throw new IllegalStateException("customObjectHandler was not set")
+        }
+        File f = handler.resolveToFileIfDownloaded(fieldValue)
+        log.info "resolved : ${f}"
+        return f;
+    }
+
+    private static File childLazyMethod(GrMethodCallExpression grExpression, boolean addSuffix) {
+        // invokedExpression = GitReferences.purejavacommTraffSrc.resolveToFile()
+        GrReferenceExpressionImpl invokedExpression = grExpression.invokedExpression as GrReferenceExpressionImpl
+        String methodName = invokedExpression.getReferenceName()
+        assert methodName == SpecialMethodName.childL.name()
+        // firstChild  = GitReferences.purejavacommTraffSrc;
+        PsiElement firstChild = invokedExpression.getFirstChild()
+        File f =  childLazyMethodResolveParent(firstChild);
+        if(f ==null){
+            return null
+        }
+        if(!addSuffix) {
+            return f
+        }
+        String suffixFile = getStringFromPsiLiteral(grExpression.argumentList.allArguments[0]);
+        if (suffixFile == null) {
+            return null
+        }
+        return new File(f, suffixFile)
+
+    }
+
     private
     static File fileViaFileChildMethod(GrMethodCallExpression grExpression, boolean addSuffix) {
 
@@ -545,7 +731,13 @@ public class MyAcceptFileProviderImpl implements ElementPattern<PsiElement> {
             return null
         }
         String methodName = invokedExpression.getReferenceName()
-        if (methodName != 'child') {
+        if(methodName == SpecialMethodName.resolveToFile.name()){
+            return resolveToFileMethod(grExpression)
+        }
+        if (methodName == SpecialMethodName.childL.name()) {
+            return childLazyMethod(grExpression,addSuffix)
+        }
+        if (methodName != SpecialMethodName.child.name()) {
             log.debug "method name is not child : ${methodName}"
             return null
         }

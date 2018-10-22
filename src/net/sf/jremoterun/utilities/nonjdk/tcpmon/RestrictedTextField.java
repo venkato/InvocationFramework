@@ -1,7 +1,6 @@
 package net.sf.jremoterun.utilities.nonjdk.tcpmon;
 
 import groovy.transform.CompileStatic;
-import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -15,7 +14,7 @@ import javax.swing.text.PlainDocument;
 @CompileStatic
 class RestrictedTextField extends JTextField {
 
-    private static final org.apache.logging.log4j.Logger log = LogManager.getLogger();
+
 
     protected String validText;
 

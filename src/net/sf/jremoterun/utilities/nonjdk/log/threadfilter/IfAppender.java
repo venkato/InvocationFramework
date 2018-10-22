@@ -1,19 +1,18 @@
 package net.sf.jremoterun.utilities.nonjdk.log.threadfilter;
 
+import net.sf.jremoterun.utilities.JrrClassUtils;
 import net.sf.jremoterun.utilities.groovystarter.st.JdkLogFormatter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import sun.reflect.Reflection;
 import timmoson.common.sertcp.TcpSession;
 
 import java.util.HashSet;
 
 public class IfAppender   extends AbstractAppender {
-	private static final Log log = LogFactory.getLog(Reflection
-			.getCallerClass(1));
+	private static final Log log = LogFactory.getLog(JrrClassUtils.getCurrentClass());
 
 	public TcpSession session;
 

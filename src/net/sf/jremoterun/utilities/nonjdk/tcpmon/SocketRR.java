@@ -1,6 +1,7 @@
 package net.sf.jremoterun.utilities.nonjdk.tcpmon;
 
 import groovy.transform.CompileStatic;
+import net.sf.jremoterun.utilities.JrrClassUtils;
 import net.sf.jremoterun.utilities.nonjdk.swing.MyTextArea;
 import org.apache.logging.log4j.LogManager;
 
@@ -9,6 +10,8 @@ import javax.swing.table.TableModel;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * this class handles the pumping of data from the incoming socket to the
@@ -17,7 +20,7 @@ import java.net.Socket;
 @CompileStatic
 public class SocketRR extends Thread {
 
-    private static final org.apache.logging.log4j.Logger log = LogManager.getLogger();
+    private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     public Socket inSocket = null;
 
@@ -121,7 +124,7 @@ public class SocketRR extends Thread {
                     try {
                         len1 = in.read(buffer, saved, len);
                     } catch (final Exception ex) {
-                        log.info(ex);
+                        log.log(Level.INFO,"",ex);
                         if (done && saved == 0) {
                             break a;
                         }
@@ -149,7 +152,7 @@ public class SocketRR extends Thread {
                     if (kk != -1) {
                         final int kk2 = newData.indexOf('\n', kk);
                         if (kk2 == -1) {
-                            log.warn("stange data not host end: " + newData);
+                            log.warning("stange data not host end: " + newData);
                         } else {
                             final StringBuffer newData1 = new StringBuffer();
                             // if (kk > 0) {
@@ -215,7 +218,7 @@ public class SocketRR extends Thread {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    log.warn("clearing text for");
+                                    log.warning("clearing text for");
                                     textArea.setText(" ... clearing text for ...\n"
                                             + newData2);
                                 }
@@ -235,7 +238,7 @@ public class SocketRR extends Thread {
             // we'll let the other side control when we're done
             // if ( inSocket != null ) done = true ;
         } catch (final Exception e) {
-            log.info("", e);
+            log.log(Level.INFO,"", e);
         } finally {
             done = true;
             try {
@@ -249,7 +252,7 @@ public class SocketRR extends Thread {
                     out = null;
                 }
             } catch (final Exception e) {
-                log.info("", e);
+                log.log(Level.INFO,"", e);
             }
             try {
                 if (in != null) {
@@ -261,8 +264,7 @@ public class SocketRR extends Thread {
                     in = null;
                 }
             } catch (final Exception e) {
-                log.info("", e);
-                ;
+                log.log(Level.INFO,"", e);
             }
             myConnection.wakeUp();
         }
@@ -288,7 +290,7 @@ public class SocketRR extends Thread {
             out = null;
             done = true;
         } catch (final Exception e) {
-            log.info("", e);
+            log.log(Level.INFO,"", e);
         }
     }
 }

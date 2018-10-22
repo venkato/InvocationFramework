@@ -5,11 +5,13 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.CustomObjectHandler
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.classpath.ToFileRef2
+import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.ChildFileLazy
+import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.FileChildLazyRef
 
 import java.util.logging.Logger
 
 @CompileStatic
-class SfLink implements Serializable, ToFileRef2 {
+class SfLink implements Serializable, ToFileRef2, ChildFileLazy {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
@@ -34,6 +36,12 @@ class SfLink implements Serializable, ToFileRef2 {
             throw new IllegalStateException("customObjectHandler was not set")
         }
         return handler.resolveToFile(this)
+    }
+
+
+    @Override
+    FileChildLazyRef childL(String child) {
+        return new FileChildLazyRef(this,child)
     }
 
 

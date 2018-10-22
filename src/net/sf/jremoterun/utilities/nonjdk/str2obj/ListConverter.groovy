@@ -38,7 +38,9 @@ class ListConverter implements StringToObjectConverterI {
             throw new IllegalArgumentException("not ParameterizedType : ${genericArg}")
 //            return null
         }
-        Type[] typeArguments = genericArg.getActualTypeArguments()
+        ParameterizedType pt = (ParameterizedType)genericArg;
+//        Type[] typeArguments = JrrClassUtils.invokeJavaMethod(genericArg,'getActualTypeArguments') as Type[]
+        Type[] typeArguments = pt.getActualTypeArguments()
         if (typeArguments.length != 1) {
             throw new IllegalArgumentException("type should be 1 : ${typeArguments}")
         }

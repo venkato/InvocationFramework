@@ -34,6 +34,7 @@ import groovy.transform.CompileStatic
 import net.sf.jremoterun.JrrUtils
 import net.sf.jremoterun.utilities.DefaultObjectName
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.ObjectWrapper
 import net.sf.jremoterun.utilities.OsInegrationClientI
 import org.apache.log4j.LogManager
@@ -64,47 +65,14 @@ public class OSIntegrationIdea implements DefaultObjectName, OsInegrationClientI
         return OsInegrationClientI.objectName;
     }
 
+    public static boolean runInNewThread = true;
+
     @Override
     public void buildAllProjects() throws Exception {
-        ObjectWrapper<Boolean> aborted2 = new ObjectWrapper<>(false);
-        ObjectWrapper<Integer> errors2 = new ObjectWrapper<>(0);
-        Project project = OSIntegrationIdea.openedProject
-        invokeAndWaitInSwingThread {
-            ApplicationManager.getApplication().runWriteAction {
-                log.info "refreshing all ..."
-                refreshAll();
-                log.info "refreshing all done"
-                log.info "rebuilding"
-                CompilerManager.getInstance(project).rebuild(new CompileStatusNotification() {
-                    @Override
-                    public void finished(boolean aborted, int errors, int warnings,
-                                         final CompileContext compileContext) {
-                        aborted2.object = aborted
-                        errors2.object = errors;
-                        if (aborted || project.isDisposed()) {
-                            return;
-                        }
-
-                        String text = "";
-                        LocalHistory.getInstance().putSystemLabel(project, errors == 0
-                                ? CompilerBundle.message("rebuild.lvcs.label.no.errors", text)
-                                : CompilerBundle.message("rebuild.lvcs.label.with.errors", text));
-                        log.info "compilation finished"
-                    }
-                });
-                log.info "rebuild all done"
-
-            }
-        }
-        log.info "errors : ${errors2.object} , aborted : ${aborted2.object}"
-        if(aborted2.object){
-            throw new Exception("aborted")
-        }
-        int erros3 =errors2.object as int;
-        if(erros3>0){
-            throw new Exception("errors : ${erros3}")
-        }
+        IdeaReBuilder reBuilder = new IdeaReBuilder();
+        reBuilder.rebuild()
     }
+
 
     DumbService getDumbService() {
         DumbService.getInstance(getOpenedProject())
@@ -113,8 +81,7 @@ public class OSIntegrationIdea implements DefaultObjectName, OsInegrationClientI
 
     void refreshAll() {
         invokeAndWaitInSwingThread {
-            SaveAndSyncHandler.getInstance().refreshOpenFiles();
-            VirtualFileManager.getInstance().syncRefresh()
+            refreshImpl()
         }
     }
 
@@ -381,6 +348,12 @@ public class OSIntegrationIdea implements DefaultObjectName, OsInegrationClientI
         Runnable r = {ExecutionUtil.runConfiguration(configurationByName, executor);}
         JrrIdeaUtils.submitTr(r)
     }
+
+    static VirtualFile conevertFileToVirtual(File file){
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+        return virtualFile;
+    }
+
 
     @Override
     public void openFile(File file, String s) throws Exception {

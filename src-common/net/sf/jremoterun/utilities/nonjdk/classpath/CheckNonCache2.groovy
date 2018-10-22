@@ -15,11 +15,15 @@ abstract class CheckNonCache2 extends GroovyRunnerConfigurator2{
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
+    public static String cacheFolderName = "cache";
+
     ClRef jfeeObject = new ClRef('org.jfree.data.ComparableObjectItem')
 
     ClRef ivyCl = new ClRef('org.sonatype.aether.RepositorySystem')
 
     ClassLoader cl = JrrClassUtils.currentClassLoader;
+
+
 
     static void check() {
         check(CheckNonCache2);
@@ -31,7 +35,7 @@ abstract class CheckNonCache2 extends GroovyRunnerConfigurator2{
 
         } else {
             String string = location.toString();
-            if (string==null||string.contains("cache")) {
+            if (string==null||string.contains(cacheFolderName)) {
                 JrrUtilities.showException("Cached classes used : ${string}", new Exception("Cache used : ${string} for ${toCheck.name}"))
             }
         }

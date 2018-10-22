@@ -1,10 +1,12 @@
 package net.sf.jremoterun.utilities.nonjdk.idea
 
+import com.intellij.openapi.extensions.PluginId
 import groovy.transform.CompileStatic
 import idea.plugins.thirdparty.filecompletion.jrr.classpathhook.JavaClassPathHook
 import net.sf.jremoterun.SimpleJvmTiAgent
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
+import net.sf.jremoterun.utilities.classpath.ClRef
 import net.sf.jremoterun.utilities.groovystarter.st.SetConsoleOut2
 import net.sf.jremoterun.utilities.nonjdk.GeneralUtils
 import net.sf.jremoterun.utilities.nonjdk.InitGeneral
@@ -18,7 +20,7 @@ import java.util.logging.Logger
 
 @CompileStatic
 class IdeaCommonInit implements Runnable {
-
+    //-Dintellij.log.stdout=false
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     static volatile boolean inInit = false;
@@ -54,6 +56,18 @@ class IdeaCommonInit implements Runnable {
     static void init1Impl() {
         SetConsoleOut2.setConsoleOutIfNotInited();
         log.info "in IdeaCommonInit.init1Impl"
+        ClassLoader log4jClassLoader = org.apache.log4j.Level.getClassLoader();
+        log.info "log4jClassLoader = ${log4jClassLoader}"
+        if (log4jClassLoader instanceof com.intellij.ide.plugins.cl.PluginClassLoader) {
+            com.intellij.ide.plugins.cl.PluginClassLoader clll = (com.intellij.ide.plugins.cl.PluginClassLoader) log4jClassLoader;
+            PluginId pluginId = clll.getPluginId();
+            log.info "log4jClassLoader classloader for log4j class pluin id ${pluginId} ";
+        }
+        if(log4jClassLoader == JrrClassUtils.getCurrentClassLoader()){
+            new ClRef('net.sf.jremoterun.utilities.nonjdk.idea.IdeaRedefineClassloader')
+            throw new Exception("Wrong classloader for log4j class ${log4jClassLoader}")
+        }
+
         String ideaProxyLoggerName = "#com.intellij.util.proxy.CommonProxy";
         setIdeaLogLevel(ideaProxyLoggerName, Level.DEBUG)
 
@@ -73,7 +87,7 @@ class IdeaCommonInit implements Runnable {
         }
 
         GeneralUtils.startLogTimer()
-        JrrClassUtils.ignoreClassesForCurrentClass.add(com.intellij.util.proxy.CommonProxy.name)
+        JrrClassUtils.ignoreClassesForCurrentClass.add(com.intellij.util.proxy.CommonProxy.getName())
         IdeaSetDependencyResolver3.setDepResolver()
         proxyLogLayout.additionalIgnore.addAll(ignoreClasses)
         Log4j2PatternLayout.customLayouts.put(ideaProxyLoggerName, proxyLogLayout)
@@ -104,7 +118,7 @@ class IdeaCommonInit implements Runnable {
         setIdeaLogLevel("#${clazz.name}", level)
     }
 
-    static void setIdeaLogLevel(String loggerName, Level level) {
+    static void setIdeaLogLevel(String loggerName, org.apache.log4j.Level level) {
         Log4j2Utils.setLogLevel(loggerName, level)
         com.intellij.openapi.diagnostic.Logger ll = com.intellij.openapi.diagnostic.Logger.getInstance(loggerName);
         ll.setLevel(level)

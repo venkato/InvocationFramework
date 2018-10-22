@@ -32,6 +32,9 @@ class IdeaInit5 extends InjectedCode {
         File gitBaseDir = list.get(0)
         assert gitBaseDir.exists()
         File logDir = list.get(1)
+        if(logDir==null){
+            throw new NullPointerException('logDir is null')
+        }
         assert logDir.isDirectory()
         initImpl2(gitBaseDir,logDir)
     }

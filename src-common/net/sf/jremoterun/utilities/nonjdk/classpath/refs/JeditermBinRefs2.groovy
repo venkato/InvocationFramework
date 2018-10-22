@@ -1,6 +1,7 @@
 package net.sf.jremoterun.utilities.nonjdk.classpath.refs
 
 import groovy.transform.CompileStatic
+import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.FileChildLazyRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitBinaryAndSourceRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitBinaryAndSourceRefRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitRef
@@ -17,7 +18,7 @@ enum JeditermBinRefs2 implements GitRefRef {
     GitRef ref;
 
     JeditermBinRefs2() {
-        ref = new GitRef(GitReferences.jtermGitSpec, name()+'/src')
+        ref = new GitRef(GitSomeRefs.jtermGitSpec, name()+'/src')
     }
 
     @Override
@@ -27,4 +28,12 @@ enum JeditermBinRefs2 implements GitRefRef {
 
 
     public static List<JeditermBinRefs2> all = values().toList()
+
+
+
+    @Override
+    FileChildLazyRef childL(String child) {
+        return new FileChildLazyRef(this,child)
+    }
+
 }

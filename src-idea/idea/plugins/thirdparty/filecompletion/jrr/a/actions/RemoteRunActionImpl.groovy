@@ -28,6 +28,8 @@ import org.apache.log4j.Logger
 import org.jetbrains.annotations.Nullable
 import org.jetbrains.plugins.groovy.GroovyFileType
 
+import java.text.SimpleDateFormat
+
 @CompileStatic
 class RemoteRunActionImpl extends AnAction {
     private static final Logger log = LogManager.getLogger(JrrClassUtils.currentClass);
@@ -64,7 +66,7 @@ class RemoteRunActionImpl extends AnAction {
         final File file = new File(
                 userHome, "jrr.properties");
         file.text = """
-# generated at ${new Date().format("yyyy-MM-dd HH:mm")}
+# generated at ${new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date())}
 className=${clazz.qualifiedName}
 methodName=${psiMethod.name}
 lineNumer=${lineNumber + 2}

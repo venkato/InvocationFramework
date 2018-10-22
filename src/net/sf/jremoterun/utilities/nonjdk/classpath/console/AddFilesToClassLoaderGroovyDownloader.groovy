@@ -8,6 +8,7 @@ import net.sf.jremoterun.utilities.classpath.AddFilesToClassLoaderGroovy
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.mdep.ivy.IvyDepResolverException
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
 import org.apache.commons.io.FileUtils
 
 import java.util.logging.Level
@@ -69,12 +70,12 @@ class AddFilesToClassLoaderGroovyDownloader extends AddFilesToClassLoaderGroovy 
         addedFiles2.findAll { it != null }.each {
             JrrUtilities.checkFileExist(it)
             if (it.file) {
-                FileUtils.copyFileToDirectory(it, toFolder)
+                FileUtilsJrr.copyFileToDirectory(it, toFolder)
             } else {
                 File toFolder2 = new File(toFolder, "classes")
                 toFolder2.mkdir()
                 assert toFolder2.exists()
-                FileUtils.copyDirectory(it, toFolder2)
+                FileUtilsJrr.copyDirectory(it, toFolder2)
             }
         }
     }

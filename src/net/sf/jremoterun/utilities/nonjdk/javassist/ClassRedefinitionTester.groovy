@@ -8,14 +8,14 @@ import groovy.transform.CompileStatic;
 
 
 @CompileStatic
-class ClassRedefinitionTester implements Runnable{
+class ClassRedefinitionTester implements Runnable {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     @Test
     @Override
     void run() {
-        ClassRedefintions.redefineSunReflection()
+        ClassRedefintions.redefineSunReflectionIfCan()
         ClassRedefintions.redifineAccessibleObject()
         ClassRedefintions.redefineX509TrustManagerImpl()
         ClassRedefintions.redifinePackage()
@@ -25,6 +25,7 @@ class ClassRedefinitionTester implements Runnable{
         ClassRedefintions.redifineHttpsCertificateCheck1()
         ClassRedefintions.redifineClassLoader()
         ClassRedefintions.redefindeDnsResolving()
+        ClassRedefintions.redefineSystemExit(true)
 
         LoggigingRedefine.redifineCommonsLoggingGetLog()
 //        LoggigingRedefine.redifineSl4jLoggingGetLog()

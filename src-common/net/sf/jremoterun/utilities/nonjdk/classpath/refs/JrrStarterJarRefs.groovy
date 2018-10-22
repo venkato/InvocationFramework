@@ -1,6 +1,8 @@
 package net.sf.jremoterun.utilities.nonjdk.classpath.refs;
 
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.classpath.BinaryWithSource2
+import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.FileChildLazyRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitRefRef;
 
@@ -11,10 +13,14 @@ import groovy.transform.CompileStatic;
 @CompileStatic
 class JrrStarterJarRefs {
 
-    public static GitRef jremoterun = new GitRef(GitReferences.starter,"libs/origin/jremoterun.jar")
+    public static BinaryWithSource2 jrrutilitiesOneJar = new BinaryWithSource2(GitSomeRefs.starter.childL( "onejar/jrrutilities.jar"), JrrStarterProjects.JrrUtilities.getSrcRef());
+    
 
-    public static GitRef jrrassist = new GitRef(GitReferences.starter,"libs/origin/jrrassist.jar")
+    public static FileChildLazyRef groovyRunner = GitSomeRefs.starter.childL('firstdownload/groovyrunner.groovy')
 
-//    public static GitRef jrrutilities = new GitRef(GitReferences.starter,"onejar/jrrutilities.jar")
+    public static FileChildLazyRef groovyClasspathDir = GitSomeRefs.starter.childL('libs/copy')
+
+
+
 
 }

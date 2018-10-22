@@ -4,6 +4,7 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.BinaryWithSource
 import net.sf.jremoterun.utilities.classpath.ClRef
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitSomeRefs
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import org.junit.Test
 
@@ -45,7 +46,7 @@ class RDesktopCompiler  extends GenericCompiler {
     }
 
     BinaryWithSource compileAndBuild(){
-        baseDir = RstaCoreCompiler.handler.cloneGitRepo3.cloneGitRepo3(GitReferences.rdesktop)
+        baseDir = RstaCoreCompiler.handler.cloneGitRepo3.cloneGitRepo3(GitSomeRefs.rdesktop.getGitSpec())
         prepare()
         compile()
         BinaryWithSource binaryWithSource = new BinaryWithSource(params.outputDir,new File(baseDir,'src'))

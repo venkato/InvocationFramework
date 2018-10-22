@@ -1,10 +1,11 @@
 package net.sf.jremoterun.utilities.nonjdk.idea.laumcherbuild;
 
 import groovy.lang.GroovyClassLoader;
+import org.jetbrains.jps.cmdline.LauncherOriginal;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.logging.Logger;
-
 
 
 public class IdeaBRunnerImpl implements Runnable {
@@ -23,14 +24,22 @@ public class IdeaBRunnerImpl implements Runnable {
 
     void f1() throws Exception {
         log.info("cp5");
-        GroovyClassLoader groovyClassLoader = (GroovyClassLoader) IdeaBuilderAddGroovyRuntime.groovyCl;
-        File f = new File(System.getProperty("user.home")+"/jrr/configs/idea_builder.groovy");
-        log.info("loading config : "+f);
-        Class aClass = groovyClassLoader.parseClass(f);
-        Runnable instance = (Runnable) aClass.newInstance();
-        log.info("running : "+aClass);
-        instance.run();
-        log.info("cp7");
+        GroovyClassLoader groovyClassLoader = (GroovyClassLoader) IdeaBuildRunnerSettings.groovyCl;
+        log.info("loading config : "+IdeaBuildRunnerSettings.ideaBuilderConfigFile);
+        if(IdeaBuildRunnerSettings.ideaBuilderConfigFile.exists()) {
+            Class aClass = groovyClassLoader.parseClass(IdeaBuildRunnerSettings.ideaBuilderConfigFile);
+            Runnable instance = (Runnable) aClass.newInstance();
+            log.info("running : " + aClass);
+            instance.run();
+            log.info("cp7");
+        }else{
+            log.info("idea config file not exists : "+IdeaBuildRunnerSettings.ideaBuilderConfigFile);
+            if(IdeaBuildRunnerSettings.startOriginal){
+                LauncherOriginal.main(IdeaBuildRunnerSettings.argsPv2.toArray(new String[0]));
+            }else{
+                throw new FileNotFoundException(IdeaBuildRunnerSettings.ideaBuilderConfigFile.getAbsolutePath());
+            }
+        }
     }
 
 }

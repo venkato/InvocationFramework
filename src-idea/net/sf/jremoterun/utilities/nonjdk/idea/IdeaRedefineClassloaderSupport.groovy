@@ -5,10 +5,8 @@ import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.AddFilesToClassLoaderCommon
 import net.sf.jremoterun.utilities.classpath.ClRef
-import net.sf.jremoterun.utilities.groovystarter.GroovyRunnerConfigurator2
 import net.sf.jremoterun.utilities.groovystarter.runners.RunnableFactory
 import net.sf.jremoterun.utilities.mdep.DropClassAdder
-import net.sf.jremoterun.utilities.mdep.DropshipClasspath
 import net.sf.jremoterun.utilities.nonjdk.idea.init.IdeaClasspathAdd
 
 import java.util.logging.Logger

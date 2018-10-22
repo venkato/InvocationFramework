@@ -10,7 +10,10 @@ import net.sf.jremoterun.utilities.groovystarter.runners.RunnableFactory
 import net.sf.jremoterun.utilities.groovystarter.runners.RunnableWithParamsFactory
 import net.sf.jremoterun.utilities.groovystarter.st.GroovyRunnerConfigurator
 import net.sf.jremoterun.utilities.javassist.codeinjector.InjectedCode
-import net.sf.jremoterun.utilities.mdep.DropshipClasspath;
+import net.sf.jremoterun.utilities.mdep.DropshipClasspath
+import net.sf.jremoterun.utilities.nonjdk.InfocationFrameworkStructure
+import net.sf.jremoterun.utilities.nonjdk.JavaVersionChecker
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitSomeRefs;
 
 import java.util.logging.Logger;
 import groovy.transform.CompileStatic;
@@ -60,6 +63,7 @@ class ClassPathInit3  extends InjectedCode{
         if(inited){
             log.info "already inited"
         }else {
+            JavaVersionChecker.checkJavaVersion();
             boolean logFileAlreadyAdded = adder.isLogFileAlreadyAdded
             adder.isLogFileAlreadyAdded = false
             adder.addAll DropshipClasspath.allLibsWithoutGroovy
@@ -67,6 +71,9 @@ class ClassPathInit3  extends InjectedCode{
             RunnableFactory.runRunner ivyDepResolver
 
             RunnableWithParamsFactory.fromClass4(gitRefSupport, [adder, gitRepoBase])
+            if(InfocationFrameworkStructure.ifDir==null) {
+                InfocationFrameworkStructure.ifDir = GitSomeRefs.ifFramework.resolveToFile()
+            }
         }
     }
 }

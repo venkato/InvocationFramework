@@ -1,15 +1,14 @@
 package net.sf.jremoterun.utilities.nonjdk.classpath.tester
 
+import groovy.transform.CompileStatic
 import net.sf.jremoterun.URLClassLoaderExt
-import net.sf.jremoterun.utilities.ContextClassLoaderWrapper;
+import net.sf.jremoterun.utilities.ContextClassLoaderWrapper
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.UrlCLassLoaderUtils
 import net.sf.jremoterun.utilities.classpath.AddFilesToUrlClassLoaderGroovy
 import net.sf.jremoterun.utilities.classpath.ClRef
 
-import java.util.logging.Logger;
-import groovy.transform.CompileStatic;
-
+import java.util.logging.Logger
 
 @CompileStatic
 class ClasspathTester {
@@ -23,7 +22,7 @@ class ClasspathTester {
         filesAndMavenIds.each { adder.addGenericEntery(it) }
         ContextClassLoaderWrapper.wrap2(classLoader,{
             if (checkNoGroovy) {
-                ClassPathTesterHelper.checkNoSuchClass(new ClRef(GroovyObject), classLoader)
+                ClassPathTesterHelper2.createClassPathTesterHelper2().checkNoSuchClass5(new ClRef(GroovyObject), classLoader)
                 classLoader.addURL(UrlCLassLoaderUtils.getClassLocation(GroovyObject).toURL())
             } else {
 

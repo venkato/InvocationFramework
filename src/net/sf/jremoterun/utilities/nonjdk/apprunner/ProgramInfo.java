@@ -25,4 +25,7 @@ public interface ProgramInfo {
 
 
     void runProcess();
+
+    boolean allowManyProcessesMatched();
+
 }

@@ -15,7 +15,7 @@ abstract class Writer5Class extends Writer3 {
 
 
 
-    String className = 'Config'
+    String classNameGenerated = 'Config'
 
     static MethodClosure addCpMethod = (MethodClosure) ClasspathConfigurator.&addCp;
 
@@ -36,6 +36,7 @@ abstract class Writer5Class extends Writer3 {
     @Override
     String buildResult() {
         List<String> res = header + importss.collect { "import ${it} ;" as String };
+        addAnotations()
         res.add getClassDeclarationName()
 //        res += ["${className}(Binding bi){super(bi)}" as String]
 //        res += ['@Override']

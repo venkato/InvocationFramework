@@ -1,11 +1,17 @@
 package net.sf.jremoterun.utilities.nonjdk.log;
 
+import javassist.CtClass;
+import javassist.CtMethod;
+import net.sf.jremoterun.JrrUtils;
 import net.sf.jremoterun.utilities.JrrClassUtils;
-import net.sf.jremoterun.utilities.nonjdk.classpath.tester.ClassPathTesterHelper;
+import net.sf.jremoterun.utilities.javassist.JrrJavassistUtils;
+import net.sf.jremoterun.utilities.nonjdk.classpath.inittracker.InitLogTracker;
+import net.sf.jremoterun.utilities.nonjdk.classpath.tester.ClassPathTesterHelper2;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.config.AppenderControl;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.impl.Log4jContextFactory;
@@ -19,11 +25,13 @@ import java.util.logging.Logger;
 
 
 public class Log4j2Utils {
-    private static final Logger log = Logger.getLogger(Log4j2Utils.class.getName());
+    private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
     // private static final Logger log = logger;
 
     public static String sep = "\n";
 
+//    public static boolean printMsgOnError = true;
+    public static boolean suppressChecks = false;
     public static Level logRootLevel = Level.INFO;
 
     public static org.apache.logging.log4j.core.Logger rootLogger;
@@ -33,11 +41,24 @@ public class Log4j2Utils {
 //    public static volatile Log4j2PatternLayout pl = new Log4j2ColorPatternLayout();
 
     public static void setLog4jAppender() throws Exception {
+        try {
+            setLog4jAppenderImpl();
+        }catch (Throwable e){
+            InitLogTracker.defaultTracker.addException("failed set appender for log4j1",e);
+            throw e;
+        }
+    }
+
+    public static void setLog4jAppenderImpl() throws Exception {
+        if(suppressChecks) {
+            suppressIsAppenderCalled();
+        }
         checkAndFixFactory();
+
         JrrClassUtils.ignoreClassesForCurrentClass.add(Log4j2Utils.class.getPackage().getName());
         ConsoleAppender ca = ConsoleAppender.createDefaultAppenderForLayout(pl);
         org.apache.logging.log4j.Logger rootLogger3 = LogManager.getRootLogger();
-        ClassPathTesterHelper.checkClassInstanceOf(rootLogger3, org.apache.logging.log4j.core.Logger.class);
+        ClassPathTesterHelper2.createClassPathTesterHelper2().checkClassInstanceOf5(rootLogger3, org.apache.logging.log4j.core.Logger.class);
         rootLogger = (org.apache.logging.log4j.core.Logger) rootLogger3;
         LoggerConfig loggerConfig = rootLogger.get();
 //		loggerConfig.stop();
@@ -70,6 +91,17 @@ public class Log4j2Utils {
             factory = new Log4jContextFactory();
             JrrClassUtils.setFieldValue(LogManager.class, "factory", factory);
         }
+    }
+
+    public static void suppressIsAppenderCalled() throws Exception {
+        InitLogTracker.defaultTracker.addLog("suppressing isRecursiveCall");
+        Class clazz =AppenderControl.class;
+        log.info( "log4j class location = "+JrrUtils.getClassLocation(clazz)+" " + clazz.getClassLoader());
+        CtClass ctClazz = JrrJavassistUtils.getClassFromDefaultPool(clazz);
+        CtMethod method = JrrJavassistUtils.findMethod( clazz,ctClazz,"isRecursiveCall", 0);
+        method.setBody("return false;");
+        JrrJavassistUtils.redefineClass(ctClazz, clazz);
+        log.info("class redefined : "+clazz.getName());
     }
 
 

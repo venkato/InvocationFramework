@@ -3,9 +3,10 @@ package net.sf.jremoterun.utilities.nonjdk.classpath.refs
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.classpath.MavenIdContains
+import net.sf.jremoterun.utilities.classpath.ToFileRef2
 
 @CompileStatic
-enum DerbyMavenIds implements MavenIdContains {
+enum DerbyMavenIds implements MavenIdContains, ToFileRef2 {
     derbyLocale_zh_TW,
     derbyLocale_zh_CN,
     derbyLocale_ru,
@@ -36,4 +37,8 @@ enum DerbyMavenIds implements MavenIdContains {
 
     public static List<DerbyMavenIds> all = values().toList()
 
+    @Override
+    File resolveToFile() {
+        return m.resolveToFile()
+    }
 }

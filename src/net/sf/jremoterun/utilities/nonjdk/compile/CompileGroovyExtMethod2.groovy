@@ -1,6 +1,7 @@
 package net.sf.jremoterun.utilities.nonjdk.compile;
 
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
 import net.sf.jremoterun.utilities.nonjdk.compiler3.CompileGroovyExtMethod
 import org.apache.commons.io.FileUtils
 import org.zeroturnaround.zip.ZipUtil;
@@ -20,7 +21,7 @@ class CompileGroovyExtMethod2 extends CompileGroovyExtMethod{
 
     File zipp() {
         File resource = createGroovyExtMethodDir(ifDir);
-        FileUtils.copyDirectory(resource, params.outputDir);
+        FileUtilsJrr.copyDirectory(resource, params.outputDir);
         File destJar = new File(ifDir, 'build/ifframework-ext-methods.jar')
         destJar.delete()
         assert !destJar.exists()

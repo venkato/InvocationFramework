@@ -30,10 +30,19 @@ class DecompilerAddFiles extends AddFilesToClassLoaderGroovy{
     
     
     void addRtJar(){
-        File javaHome = SystemUtils.getJavaHome()
-        assert javaHome.exists()
-        File rtJar = javaHome.child('lib/rt.jar')
-        add rtJar
+        File javaHome = SystemUtils.getJavaHome();
+        assert javaHome.exists();
+        File rtJar = javaHome.child('lib/rt.jar');
+        add( rtJar);
+    }
+
+    void addJfrJarsIfExists(){
+        File javaHome = SystemUtils.getJavaHome();
+        assert javaHome.exists();
+        File jfrJar = javaHome.child('lib/jfr.jar');
+        if(jfrJar.exists()) {
+            add(jfrJar);
+        }
     }
 
     void addToolsJar(){
@@ -46,6 +55,7 @@ class DecompilerAddFiles extends AddFilesToClassLoaderGroovy{
 
     void addAllJdkJars(){
         addRtJar()
+        addJfrJarsIfExists()
         addToolsJar()
     }
 

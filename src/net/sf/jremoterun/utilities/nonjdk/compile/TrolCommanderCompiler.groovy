@@ -5,6 +5,7 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.AddFilesToUrlClassLoaderGroovy
 import net.sf.jremoterun.utilities.classpath.CustomObjectHandler
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.Log4j2MavenIds
 import org.apache.commons.io.FileUtils
 import org.junit.Test
@@ -55,7 +56,7 @@ class TrolCommanderCompiler extends GenericCompiler {
     File zipp() {
         File classes2 = TrolCommanderCompilerAux.trolBinAndSrc2.resolveToFile()
         classes2.mkdir()
-        FileUtils.copyDirectory(params.outputDir, classes2)
+        FileUtilsJrr.copyDirectory(params.outputDir, classes2)
         File zipFile = new File(baseDir, TrolCommanderCompilerAux.trolBinAndSrc.pathInRepo)
         zipFile.delete()
         assert !zipFile.exists()

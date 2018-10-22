@@ -71,6 +71,7 @@ class IdwWindowFinder implements KeyEventDispatcher {
                     case KeyEvent.VK_DOWN:
                         treeSwing.requestFocus()
                         treeSwing.requestFocusInWindow()
+                        break;
                     case KeyEvent.VK_ENTER:
                         List<IdwWindowWrapper> windows = findMatchedWindows();
                         if (windows.size() == 1) {
@@ -173,7 +174,7 @@ class IdwWindowFinder implements KeyEventDispatcher {
         DefaultTreeModel model = treeSwing.getModel() as DefaultTreeModel;
         DefaultMutableTreeNode root = model.root as DefaultMutableTreeNode;
 
-        List childs = new ArrayList(root.children().toList())
+        List childs = new ArrayList((List)root.children().toList())
         childs.each {
             root.remove(it as DefaultMutableTreeNode)
 //            model.removeNodeFromParent(it);

@@ -11,7 +11,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import net.sf.jremoterun.utilities.JrrUtilities;
 import net.sf.jremoterun.utilities.JrrUtilities3;
-import sun.reflect.Reflection;
 
 @CompileStatic
 public class MyStartup extends AbstractUIPlugin implements IStartup {

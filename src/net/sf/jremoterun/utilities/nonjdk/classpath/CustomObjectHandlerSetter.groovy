@@ -6,6 +6,7 @@ import net.sf.jremoterun.utilities.classpath.AddFilesToClassLoaderCommon
 import net.sf.jremoterun.utilities.classpath.ClRef
 import net.sf.jremoterun.utilities.groovystarter.runners.RunnableWithParamsFactory
 import net.sf.jremoterun.utilities.javassist.codeinjector.InjectedCode
+import net.sf.jremoterun.utilities.nonjdk.JavaVersionChecker
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.CustObjMavenIds
 
 import java.util.logging.Logger
@@ -20,6 +21,7 @@ class CustomObjectHandlerSetter extends InjectedCode {
 
     @Override
     Object get(Object key) {
+        JavaVersionChecker.checkJavaVersion();
         List list = key as List
         AddFilesToClassLoaderCommon adder = list[0] as AddFilesToClassLoaderCommon;
         assert adder!=null

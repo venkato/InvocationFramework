@@ -24,7 +24,6 @@ class Sam extends RstaScriptHelper {
                 SyntaxConstants.SYNTAX_STYLE_NONE,
                 SyntaxConstants.SYNTAX_STYLE_NONE, true);
         //configProxy(l);
-
     }
 
     void configProxy(Listener l) {

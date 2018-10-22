@@ -1,6 +1,7 @@
 package net.sf.jremoterun.utilities.nonjdk.log.threadfilter
 
 import groovy.transform.CompileStatic
+import net.sf.jremoterun.utilities.JrrClassUtils
 import org.apache.logging.log4j.core.LogEvent
 import org.apache.logging.log4j.core.appender.AbstractAppender
 
@@ -17,7 +18,7 @@ public abstract class Log4j2ThreadAppender extends AbstractAppender {
     public volatile boolean translateAllLoggersForExecuterThread = false;
 
     public Log4j2ThreadAppender() throws Exception {
-        super("RemoteAppender", null, null);
+        super("JrrAppender", null, null);
         loggingThread = Thread.currentThread();
     }
 
@@ -28,6 +29,11 @@ public abstract class Log4j2ThreadAppender extends AbstractAppender {
     public void addClassToLog4jTranslate(Class clazz) {
         loggingLogger.add(clazz.getName());
     }
+
+    void setAppenderName(String name){
+        JrrClassUtils.setFieldValue(this,'name',name)
+    }
+
 
     public boolean isPassEvent(LogEvent loggingEvent) {
         boolean passed = false;

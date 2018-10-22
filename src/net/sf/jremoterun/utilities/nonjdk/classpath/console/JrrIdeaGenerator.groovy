@@ -5,8 +5,10 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.groovystarter.ClassNameSynonym
 import net.sf.jremoterun.utilities.groovystarter.GroovyMethodRunnerParams
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
 import net.sf.jremoterun.utilities.nonjdk.classpath.CustomObjectHandlerImpl
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JrrStarterJarRefs
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.JrrStarterJarRefs2
 import net.sf.jremoterun.utilities.nonjdk.compile.IdeaInitPluginCompiler
 import net.sf.jremoterun.utilities.nonjdk.compile.IdeaPluginCompiler
 import net.sf.jremoterun.utilities.nonjdk.compile.JrrUtilsCompiler
@@ -25,7 +27,7 @@ class JrrIdeaGenerator implements ClassNameSynonym {
         File ideaPlugin = compileAndPrepare(ideaDir)
         File ideaPluginConfigs = ideaPLuginDir.child('config/plugins')
         assert ideaPLuginDir.exists()
-        FileUtils.copyDirectoryToDirectory(ideaPlugin, ideaPluginConfigs)
+        FileUtilsJrr.copyDirectoryToDirectory(ideaPlugin, ideaPluginConfigs)
         updateVmOptions(ideaPLuginDir)
         log.info "plugin created in ${ideaPluginConfigs}"
     }
@@ -37,9 +39,9 @@ class JrrIdeaGenerator implements ClassNameSynonym {
         File pluginDir2 = compiler.client.ifDir.child("build/${pluginName}")
         File pluginDir = pluginDir2.child("lib")
         pluginDir.mkdirs()
-        FileUtils.copyFileToDirectory(JrrStarterJarRefs.jremoterun.resolveToFile(), pluginDir)
-        FileUtils.copyFileToDirectory(JrrStarterJarRefs.jrrassist.resolveToFile(), pluginDir)
-        FileUtils.copyFileToDirectory(IdeaInitPluginCompiler.getJrrUtilsJar(), pluginDir)
+        FileUtilsJrr.copyFileToDirectory(JrrStarterJarRefs2.jremoterun.resolveToFile(), pluginDir)
+        FileUtilsJrr.copyFileToDirectory(JrrStarterJarRefs2.jrrassist.resolveToFile(), pluginDir)
+        FileUtilsJrr.copyFileToDirectory(IdeaInitPluginCompiler.getJrrUtilsJar(), pluginDir)
         File pluginJar = pluginDir.child("${pluginName}.jar")
         File metaInf = compiler.client.ifDir.child('resources/idea/META-INF')
         compiler.testUpdateIdeaJar2(pluginJar, metaInf)

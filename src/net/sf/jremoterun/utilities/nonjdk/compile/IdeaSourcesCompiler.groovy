@@ -8,6 +8,7 @@ import net.sf.jremoterun.utilities.mdep.DropshipClasspath
 import net.sf.jremoterun.utilities.nonjdk.IfFrameworkResourceDirs
 import net.sf.jremoterun.utilities.nonjdk.IfFrameworkSrcDirs
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.CustObjMavenIds
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 
 import java.util.logging.Logger
@@ -26,9 +27,11 @@ class IdeaSourcesCompiler extends IfFrameworkCompiler {
     ]
 
     public static List mavenIds = [
-            CustObjMavenIds.git,
+            GitMavenIds.jgit,
             LatestMavenIds.jsoup,
             LatestMavenIds.jodaTime,
+            LatestMavenIds.javaCompiler2Janino,
+            LatestMavenIds.javaCompilerJaninoCommon,
     ]
 
 

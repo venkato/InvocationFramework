@@ -11,6 +11,9 @@ import net.sf.jremoterun.utilities.nonjdk.classpath.calchelpers.ClassPathCalcula
 
 import java.util.logging.Logger
 
+/**
+ * Doesn't check that method exists
+ */
 @CompileStatic
 class DependencyChecker {
 

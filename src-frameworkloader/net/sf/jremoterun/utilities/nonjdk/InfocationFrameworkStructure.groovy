@@ -40,6 +40,7 @@ class InfocationFrameworkStructure extends InjectedCode {
 
     @Override
     Object get(Object o) {
+        JavaVersionChecker.checkJavaVersion()
         List list = (List) o;
         if (list == null) {
             throw new IllegalArgumentException("need set adder and InfocationFramework base dir")

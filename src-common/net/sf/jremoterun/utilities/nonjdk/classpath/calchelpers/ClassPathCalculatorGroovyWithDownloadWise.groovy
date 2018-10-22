@@ -4,6 +4,8 @@ import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.classpath.MavenId
+import net.sf.jremoterun.utilities.classpath.ToFileRef2
+import net.sf.jremoterun.utilities.nonjdk.BaseDirSetting
 import net.sf.jremoterun.utilities.nonjdk.classpath.repohash.File2HashMapJsonSaver
 import net.sf.jremoterun.utilities.nonjdk.classpath.search.FindMavenIdsAndDownload
 import net.sf.jremoterun.utilities.nonjdk.ideadep.LongTaskInfo
@@ -24,16 +26,23 @@ class ClassPathCalculatorGroovyWithDownloadWise extends ClassPathCalculatorGroov
 
     //    File noMavenIdConfigFile = MissedMavenIdsSettingsLoader.noMavenIdFilesDefault
 
-    public static File noMavenIdConfigJsonFile = new File(MavenDefaultSettings.mavenDefaultSettings.userHome, "jrr/configs/noMavenIds2.json")
+    public
+    static ToFileRef2 noMavenIdConfigJsonFile = BaseDirSetting.baseDirSetting.childL("configs/noMavenIds2.json")
+
+    //public static File noMavenIdConfigJsonFile = new File(MavenDefaultSettings.mavenDefaultSettings.userHome, "jrr/configs/noMavenIds2.json")
 
     Map<File, String> noMavenIds
+
+    ClassPathCalculatorGroovyWithDownloadWise() {
+        this(new LongTaskInfo())
+    }
 
     ClassPathCalculatorGroovyWithDownloadWise(LongTaskInfo longTaskInfo) {
         super(longTaskInfo)
     }
 
     static Map<File, String> readNoMavenIdsFile(){
-        return File2HashMapJsonSaver.readJson2(noMavenIdConfigJsonFile)
+        return File2HashMapJsonSaver.readJson2(noMavenIdConfigJsonFile.resolveToFile())
     }
 
     void loadMissedMavenids() {
@@ -63,10 +72,13 @@ class ClassPathCalculatorGroovyWithDownloadWise extends ClassPathCalculatorGroov
     }
 
     static void saveSettingMissingMaveIdsS(Map<File, String> noMavenIds2){
+        if(noMavenIds2==null){
+            throw new NullPointerException('maven ids is null')
+        }
         if (noMavenIds2.size() > 0) {
 //            log.info("no maven ids saved ${noMavenIdConfigFile}")
 //            noMavenIdConfigFile.text = loader3.saveSettings(noMavenIds)
-            File2HashMapJsonSaver.saveToJson(noMavenIds2,noMavenIdConfigJsonFile)
+            File2HashMapJsonSaver.saveToJson(noMavenIds2,noMavenIdConfigJsonFile.resolveToFile())
         } else {
             log.info "noMavenIds is empty"
         }
@@ -79,8 +91,8 @@ class ClassPathCalculatorGroovyWithDownloadWise extends ClassPathCalculatorGroov
             if (file == null) {
                 onMissingMavenId(mavenId)
             } else {
-                File canonicalFile = file.canonicalFile
-                if (canonicalFile.path != file.path) {
+                File canonicalFile = file.getCanonicalFile()
+                if (canonicalFile.getPath() != file.getPath()) {
                     MavenId mavenId2 = mavenCommonUtils.detectMavenIdFromFileName(canonicalFile)
                     if (mavenId2 == null) {
                         throw new Exception("failed resolve maven id from file : ${canonicalFile.absolutePath},  which derived from maven id ${mavenId}")

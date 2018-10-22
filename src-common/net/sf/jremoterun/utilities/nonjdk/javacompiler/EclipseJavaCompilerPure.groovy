@@ -4,8 +4,10 @@ import groovy.io.FileType
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.ToFileRef2
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
 import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.AddFileToClassloaderDummy
 import net.sf.jremoterun.utilities.nonjdk.compiler3.eclipse.EclipseCompiler3
+import org.apache.commons.io.FileUtils
 
 import java.util.logging.Logger
 
@@ -17,6 +19,7 @@ public class EclipseJavaCompilerPure {
     List<File> files = []
     EclipseCompiler3 compiler3;
     String javaVersion
+    public boolean rememberOutput = false;
     List<String> additionalFlags = ['-g','-nowarn',]
 
     void addInDir(ToFileRef2 f ){
@@ -30,18 +33,22 @@ public class EclipseJavaCompilerPure {
         }else{
             assert f.directory
             f.eachFileRecurse(FileType.FILES, {
-                File f2 = it as File
-                String name = f2.name
-                if (name.endsWith('.java')) {
-                    files.add(f2)
-                }
+                addFileImpl(it)
             })
+        }
+    }
+
+    void addFileImpl(File f2){
+        String name = f2.name
+        if (name.endsWith('.java')) {
+            files.add(f2)
         }
     }
 
     void checkOutDir(){
 
         assert outputDir!=null
+        FileUtils.deleteQuietly(outputDir)
         outputDir.mkdir()
         assert outputDir.exists()
         outputDir.deleteDir()
@@ -53,13 +60,19 @@ public class EclipseJavaCompilerPure {
         assert outputDir.listFiles().length == 0
     }
 
+    StringWriter createCompiler( ){
+        StringWriter javacOutput = new StringWriter();
+        PrintWriter writer = new PrintWriter(javacOutput);
+        compiler3 = new EclipseCompiler3(writer, writer, false, null, null,rememberOutput)
+        return javacOutput
+    }
+
     void compile() {
         assert javaVersion!=null
         checkOutDir()
+        files = files.unique();
         String[] javacParameters = makeParameters();
-        StringWriter javacOutput = new StringWriter();
-        PrintWriter writer = new PrintWriter(javacOutput);
-        compiler3 = new EclipseCompiler3(writer, writer, false, null, null)
+        StringWriter javacOutput  = createCompiler()
         boolean result = compile2(javacParameters)
 //        log.info "result : ${result}"
         if (result) {
@@ -83,6 +96,9 @@ public class EclipseJavaCompilerPure {
 
 
     private String[] makeParameters() {
+        if(files.size()==0){
+            throw new Exception("No file to compile")
+        }
         LinkedList<String> params = new LinkedList<String>();
         params.addAll(additionalFlags)
         params.add("-d");

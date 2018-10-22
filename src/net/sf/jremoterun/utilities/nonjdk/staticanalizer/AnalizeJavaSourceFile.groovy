@@ -86,7 +86,8 @@ class AnalizeJavaSourceFile extends AnalizeCommon<JavaSourceElemntInfo> {
 
     List<JavaSourceElemntInfo> analizeFile(File f) {
         assert f.name.endsWith('.java')
-        CompilationUnit cu = JavaParser.parse(f);
+//        CompilationUnit cu = JavaParser.parse(f);
+        CompilationUnit cu = new JavaParser().parse(f).result.get();
 //        Name package23 = cu.packageDeclaration.get().name
 //        ClassOrInterfaceDeclaration typeDeclaration = cu.getPrimaryType().get() as ClassOrInterfaceDeclaration
 

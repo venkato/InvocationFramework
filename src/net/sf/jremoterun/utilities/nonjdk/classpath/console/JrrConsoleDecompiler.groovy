@@ -1,6 +1,7 @@
 package net.sf.jremoterun.utilities.nonjdk.classpath.console
 
 import com.github.javaparser.JavaParser
+import com.github.javaparser.ParseResult
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.MethodDeclaration
 import com.github.javaparser.ast.body.TypeDeclaration
@@ -21,21 +22,21 @@ class JrrConsoleDecompiler implements ClassNameSynonym{
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
-    void f1(File from, File toDir) {
-        String[] args = [from.absolutePath, toDir.absolutePath]
+    void decompileDirect(File from, File toDir) {
+        String[] args = [from.getAbsolutePath(), toDir.getAbsolutePath()]
         ConsoleDecompiler.main(args)
     }
 
-    void decompile(File jarFile, String className) {
-        decompile(jarFile, className, [:])
+    void decompile(String className,File jarFile) {
+        decompile(className, [:],jarFile)
     }
 
     void decompile2(String className) {
-        decompile(findJar(className), className)
+        decompile(className,findJar(className))
     }
 
     void decompile2(String className, String methodName, int argCount) {
-        decompile(findJar(className), className, methodName, argCount)
+        decompile(className, methodName, argCount,findJar(className))
     }
 
     File findJar(String className) {
@@ -57,9 +58,10 @@ class JrrConsoleDecompiler implements ClassNameSynonym{
     }
 
 
-    void decompile(File jarFile, String className, Map options) {
+    void decompile(String className, Map options, File jarFile) {
         FernflowerDecompiler2 fernflowerDecompiler = new FernflowerDecompiler2(options)
         fernflowerDecompiler.addFiles.addRtJar()
+        fernflowerDecompiler.addFiles.addJfrJarsIfExists()
         String decompile = fernflowerDecompiler.decompile(jarFile, className)
         log.info "${decompile}"
     }
@@ -68,10 +70,10 @@ class JrrConsoleDecompiler implements ClassNameSynonym{
         AddFileToClassloaderDummy fileToClassloaderDummy = new AddFileToClassloaderDummy()
         fileToClassloaderDummy.add mavenId
         File file = fileToClassloaderDummy.addedFiles2[0]
-        decompile(file, className, methodName, argCounts)
+        decompile(className, methodName, argCounts,file)
     }
 
-    void decompile(File jarFile, String className, String methodName, int argCounts) {
+    void decompile(String className, String methodName, int argCounts,File jarFile) {
         FernflowerDecompiler2 fernflowerDecompiler = new FernflowerDecompiler2()
         String decompile = fernflowerDecompiler.decompile(jarFile, className)
         f3(decompile, methodName, argCounts)
@@ -79,7 +81,8 @@ class JrrConsoleDecompiler implements ClassNameSynonym{
 
     void f3(String classContent, String methodName, int argCounts) {
         assert classContent != null
-        CompilationUnit cu = JavaParser.parse(classContent);
+//        CompilationUnit cu = JavaParser.parse(classContent);
+        CompilationUnit cu = new JavaParser().parse(classContent).result.get();
         int size = cu.getTypes().size()
         if (size == 0) {
             throw new IllegalStateException("no types found : ${classContent}")

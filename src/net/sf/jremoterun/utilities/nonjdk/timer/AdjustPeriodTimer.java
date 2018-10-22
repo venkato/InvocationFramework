@@ -40,10 +40,20 @@ public class AdjustPeriodTimer extends TimerPeriod {
 		super.setTask(new TimerTask());
 	}
 
+	/**
+	 *
+	 * @param updateTime in ms
+	 * @param task
+	 */
 	public AdjustPeriodTimer(final long updateTime, final Runnable task) {
 		this(updateTime, TimerStyle.Consecutive, task);
 	}
 
+	/**
+	 * @param updateTime milli seconds
+	 * @param timerStyle
+	 * @param task
+	 */
 	public AdjustPeriodTimer(final long updateTime, final TimerStyle timerStyle, final Runnable task) {
 		// super(timerStyle, new TimerTask(), updateTime);
 		setPeriod(updateTime);

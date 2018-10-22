@@ -1,6 +1,7 @@
 package net.sf.jremoterun.utilities.nonjdk.idea.jrr
 
-import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindow
+import idea.plugins.thirdparty.filecompletion.jrr.a.actions.reloadclass.ReloadClassConnectionPanel;
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.jrrbean.JrrBeanMaker
 
@@ -18,7 +19,9 @@ class JrrIdeaBeanCommon {
             .makeBeanAndRegisterMBeanNoEx(JrrIdeaBeanCommon);
 
     JPanel customRunners;
+    ReloadClassConnectionPanel reloadClassToolbar;
 
 
+    ToolWindow reloadClassToolWindow
     ToolWindow customRunnersToolWindow
 }

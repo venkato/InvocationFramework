@@ -20,4 +20,10 @@ public class ThreeResult<T, E, V>  extends TwoResult<T,E>{
 	V getThird() {
 		return third
 	}
+
+
+	@Override
+	String toString() {
+		return "${first} , ${second} , ${third}"
+	}
 }

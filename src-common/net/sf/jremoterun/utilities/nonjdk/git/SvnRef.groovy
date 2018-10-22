@@ -12,11 +12,11 @@ class SvnRef extends SvnSpec{
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
-    String pathInRepo;
+    public String branch;
 
-    SvnRef(String repo, String pathInRepo) {
-        this.repo = repo
-        this.pathInRepo = pathInRepo
+    SvnRef(String repo, String branch) {
+        super(repo)
+        this.branch = branch
     }
 
 }

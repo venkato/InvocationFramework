@@ -15,5 +15,6 @@ class IdeaRedefineClassloaderTester implements Runnable{
         IdeaRedefineClassloader.ideaPluginId = 'randomid'
         IdeaRedefineClassloader.redifineClassloader();
         RedefineIdeaClassUtils.ideaLoggerTurnOff()
+        idea.plugins.thirdparty.filecompletion.jrr.classpathhook.JavaClassPathHook.installBothHooks()
     }
 }

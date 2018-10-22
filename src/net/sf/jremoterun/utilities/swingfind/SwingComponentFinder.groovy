@@ -61,8 +61,8 @@ public class SwingComponentFinder {
 					}
 				}
 			} else if (component instanceof Container) {
-				Container new_name = (Container) component;
-				Component aa = findComponent(new_name, accepter);
+				Container nestedContainer = (Container) component;
+				Component aa = findComponent(nestedContainer, accepter);
 				if (aa != null) {
 					return aa;
 				}

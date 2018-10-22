@@ -9,6 +9,7 @@ import net.sf.jremoterun.utilities.nonjdk.classpath.refs.CustObjMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GroovyMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.Log4j2MavenIds
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.SshdMavenIds
 
 import java.util.logging.Logger
 
@@ -17,12 +18,13 @@ import static net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds.g
 import static net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds.jline2
 import static net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds.jline3
 import static net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds.junit
-import static net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds.sshd
 
 @CompileStatic
 class DefaultClasspathAdder extends InjectedCode {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
+
+    public static boolean addLatestFlag =false;
 
     public static List findLatest = []
     static {
@@ -46,12 +48,16 @@ class DefaultClasspathAdder extends InjectedCode {
         adder.addM guavaMavenId;
         adder.addM junit;
         adder.addAll GroovyMavenIds.all;
-        List<MavenIdContains> findLatest3 = findLatest
-        findLatest3.each {
-            adder.addM(mcu.findLatestMavenOrGradleVersion2(it.m))
-        };
+        if(addLatestFlag) {
+            List<MavenIdContains> findLatest3 = findLatest
+            findLatest3.each {
+                adder.addM(mcu.findLatestMavenOrGradleVersion2(it.m))
+            };
+        }else{
+            adder.addAll(findLatest)
+        }
         adder.addMWithDependeciesDownload jline3
         adder.addMWithDependeciesDownload jline2
-        adder.addMWithDependeciesDownload sshd
+        adder.addMWithDependeciesDownload SshdMavenIds.core
     }
 }

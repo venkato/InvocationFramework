@@ -22,12 +22,20 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 import net.sf.jremoterun.utilities.JrrClassUtils;
+import net.sf.jremoterun.utilities.JrrUtilities;
+import net.sf.jremoterun.utilities.nonjdk.git.GitProgressMonitorJrr;
+import net.sf.jremoterun.utilities.nonjdk.git.GitRemoteFind;
+import net.sf.jremoterun.utilities.nonjdk.git.GitRepoUtils;
 
 public class PushForceImpl2 implements IObjectActionDelegate {
 
 	private static final java.util.logging.Logger LOG = java.util.logging.Logger
 			.getLogger(JrrClassUtils.getCurrentClass().getName());
 
+	public static String myUserName = System.getProperty("user.name");
+	public static boolean needSetMyRemote = true;
+	public static GitProgressMonitorJrr progressMonitor = new GitProgressMonitorJrr();
+	
 	private IWorkbenchPart activePart;
 	private File selectedRepositoryLocation;
 
@@ -55,6 +63,7 @@ public class PushForceImpl2 implements IObjectActionDelegate {
 			forceFush(selectedRepositoryLocation);
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, null, e);
+			JrrUtilities.showException("Push force failed", e);
 		}
 	}
 
@@ -65,6 +74,10 @@ public class PushForceImpl2 implements IObjectActionDelegate {
 		// create.subcommand;
 		org.eclipse.jgit.api.Git git = Git.open(file);
 		PushCommand push = git.push();
+		push.setProgressMonitor(progressMonitor);
+		if(needSetMyRemote) {
+			push.setRemote(findMyRemote(file));
+		}
 		push.setForce(true);
 		Iterable<PushResult> callResult = push.call();
 		StringBuilder sb = new StringBuilder();
@@ -112,6 +125,20 @@ public class PushForceImpl2 implements IObjectActionDelegate {
 		// LOG.info(output);
 		// test2
 		MessageDialog.openWarning(null, "Git push force", file.getAbsolutePath() + " \n" + sb);
+	}
+	
+	public static String findMyRemote(File file) {
+		GitRepoUtils gitRepoUtils = new GitRepoUtils(file);
+		GitRemoteFind gitRemoteFind = new GitRemoteFind() {
+
+			@Override
+			public boolean isRepoGood(String uri) {
+				return uri.startsWith(myUserName);
+			}
+			
+		};
+		String remote = gitRemoteFind.detectRemote(gitRepoUtils);
+		return remote;
 	}
 
 	private void updateActionEnablement(IAction action) {

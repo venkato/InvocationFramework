@@ -1,5 +1,6 @@
 package net.sf.jremoterun.utilities.nonjdk.javassist
 
+import com.google.common.reflect.Types
 import groovy.transform.CompileStatic
 import javassist.ClassClassPath
 import javassist.ClassPath
@@ -12,6 +13,8 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.classpath.ClRef
 import net.sf.jremoterun.utilities.javassist.JrrJavassistUtils
+import org.apache.commons.lang3.JavaVersion
+import org.apache.commons.lang3.SystemUtils
 
 import java.util.logging.Logger
 
@@ -19,6 +22,7 @@ import static net.sf.jremoterun.utilities.javassist.JrrJavassistUtils.LogVarName
 import static net.sf.jremoterun.utilities.javassist.JrrJavassistUtils.createLogVar
 import static net.sf.jremoterun.utilities.javassist.JrrJavassistUtils.findMethod
 import static net.sf.jremoterun.utilities.javassist.JrrJavassistUtils.getClassFromDefaultPool
+import static net.sf.jremoterun.utilities.javassist.JrrJavassistUtils.mapVarName
 import static net.sf.jremoterun.utilities.javassist.JrrJavassistUtils.redefineClass
 
 @CompileStatic
@@ -46,12 +50,29 @@ public class ClassRedefintions {
         Class clazz = java.lang.Package
         final CtClass cc = JrrJavassistUtils.getClassFromDefaultPool(clazz);
         if (true) {
-            CtBehavior method1 = JrrJavassistUtils.findMethod(clazz, cc, "isSealed", 1);
-            method1.setBody("{return false;}");
+            try {
+                CtBehavior method1 = JrrJavassistUtils.findMethod(clazz, cc, "isSealed", 1);
+                method1.setBody("{return false;}");
+            }catch(NoSuchMethodException e){
+                log.info( "failed find isSealed method with 1 param ",e)
+            }
         }
         if (true) {
             CtBehavior method1 = JrrJavassistUtils.findMethod(clazz, cc, "isSealed", 0);
             method1.setBody("{return false;}");
+        }
+        JrrJavassistUtils.redefineClass(cc, clazz);
+    }
+
+    static void redefineSystemExit(boolean append) throws Exception {
+        init();
+        Class clazz = Runtime
+        final CtClass cc = JrrJavassistUtils.getClassFromDefaultPool(clazz);
+        CtBehavior method1 = JrrJavassistUtils.findMethod(clazz, cc, "exit", 1);
+        if(append){
+            method1.insertBefore("{Thread.dumpStack();}");
+        }else {
+            method1.setBody("{Thread.dumpStack();}");
         }
         JrrJavassistUtils.redefineClass(cc, clazz);
     }
@@ -74,6 +95,18 @@ public class ClassRedefintions {
         CtBehavior method1 = JrrJavassistUtils.findMethod(clazz, cc, "setSecurityManager", 1);
 
         method1.setBody("{setSecurityManager0(null);}");
+        JrrJavassistUtils.redefineClass(cc, clazz);
+    }
+
+    /**
+     TODO works ?
+     */
+    static void redefineClassloaderCertCheck() throws Exception {
+        init();
+        Class clazz = ClassLoader
+        final CtClass cc = JrrJavassistUtils.getClassFromDefaultPool(clazz);
+        CtBehavior method1 = JrrJavassistUtils.findMethod(clazz, cc, "checkCerts", 2);
+        method1.setBody("{}");
         JrrJavassistUtils.redefineClass(cc, clazz);
     }
 
@@ -105,22 +138,83 @@ public class ClassRedefintions {
         JrrJavassistUtils.redefineClass(cc, clazz);
     }
 
+    static void redefineServiceLoader(String JrrServiceLoaderFactoryS) throws Exception {
+        init();
+        Class clazz = ServiceLoader
+        final CtClass cc = getClassFromDefaultPool(clazz);
+        CtBehavior iteratorMethod = JrrJavassistUtils.findMethod(clazz, cc, 'iterator', 0)
+        iteratorMethod.insertBefore """
+{
+${JrrJavassistUtils.createGlobalServicesMapVar}
+java.util.Map jrrServiceLoaderFactory =  (java.util.Map) ${mapVarName}.get( "${JrrServiceLoaderFactoryS}" );
+java.util.Iterator jrrresult = (java.util.Iterator)jrrServiceLoaderFactory.get(this);
+if(jrrresult!=null){
+    return jrrresult;
+}
+}
+"""
+        JrrJavassistUtils.redefineClass(cc, clazz);
+    }
+
 
     static void redifineHttpsCertificateCheck1() throws Exception {
         init();
         ClRef cr = new ClRef('sun.net.www.protocol.https.HttpsClient')
-        Class class1 = cr.loadClass(JrrUtilities.getCurrentClassLoader());
+        Class class1 = cr.loadClass(JrrClassUtils.getCurrentClassLoader());
         final CtClass cc = getClassFromDefaultPool(class1);
         final CtMethod method = cc.getDeclaredMethod("checkURLSpoofing");
         method.setBody("{}");
         JrrJavassistUtils.redefineClass(cc, class1);
     }
 
+    static void redefineSslHandshakerIfCan() throws Exception {
+        boolean isJava9Plus = SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)
+        if(isJava9Plus){
+
+        }else {
+            redefineSslHandshaker()
+        }
+    }
+
+    /**
+     * Not works on java9+
+     */
+    static void redefineSslHandshaker() throws Exception {
+        init();
+        ClRef cr = new ClRef('sun.security.ssl.Handshaker')
+        Class class1 = cr.loadClass(JrrClassUtils.getCurrentClassLoader());
+        final CtClass cc = getClassFromDefaultPool(class1);
+        final CtMethod method = JrrJavassistUtils.findMethod(cc,'fatalSE',3)
+        method.setBody("{}");
+        JrrJavassistUtils.redefineClass(cc, class1);
+    }
+
+
+    static void redefineJava11BuiltinClassLoaderIfCan() throws Exception {
+        boolean isJava9Plus = SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)
+        if(isJava9Plus){
+            redefineJava11BuiltinClassLoader()
+        }else {
+
+        }
+    }
+
+    static void redefineJava11BuiltinClassLoader() throws Exception {
+        init();
+        ClRef cr = new ClRef('jdk.internal.loader.BuiltinClassLoader')
+        Class class1 = cr.loadClass(JrrClassUtils.getCurrentClassLoader());
+
+        final CtClass cc = getClassFromDefaultPool(class1);
+        final CtBehavior isSealedMethod = findMethod(class1, cc, "isSealed", 2);
+
+        isSealedMethod.setBody("{return false;}") ;
+        JrrJavassistUtils.redefineClass(cc, class1);
+    }
 
     static void redefineX509TrustManagerImpl() throws Exception {
         init();
         ClRef cr = new ClRef('sun.security.ssl.X509TrustManagerImpl')
-        Class class1 = cr.loadClass(JrrUtilities.getCurrentClassLoader());
+        Class class1 = cr.loadClass(JrrClassUtils.getCurrentClassLoader());
 
         final CtClass cc = getClassFromDefaultPool(class1);
         final Collection<CtMethod> methods = cc.getDeclaredMethods().findAll { it.name == 'checkTrusted' };
@@ -129,10 +223,19 @@ public class ClassRedefintions {
         JrrJavassistUtils.redefineClass(cc, class1);
     }
 
+    static void redefineSunReflectionIfCan() throws Exception {
+        boolean isJava9Plus = SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)
+        if(isJava9Plus){
+
+        }else {
+            redefineSunReflection()
+        }
+    }
+
     static void redefineSunReflection() throws Exception {
         init();
         ClRef cr = new ClRef('sun.reflect.Reflection')
-        Class class1 = sun.reflect.Reflection;//cr.loadClass(JrrUtilities.getCurrentClassLoader());
+        Class class1 = cr.loadClass2();//cr.loadClass(JrrUtilities.getCurrentClassLoader());
 
         final CtClass cc = getClassFromDefaultPool(class1);
         final CtMethod method1 = JrrJavassistUtils.findMethod(class1,cc,'ensureMemberAccess',4)

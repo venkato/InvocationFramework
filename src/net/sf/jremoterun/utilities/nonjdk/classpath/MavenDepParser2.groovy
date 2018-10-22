@@ -15,7 +15,7 @@ class MavenDepParser2 {
 
      static void findDep(File inFile,File outFile){
          assert inFile.exists()
-         List<MavenId> deps = MavenDepParser.findDepsFromPomXml(inFile.text)
+         List<MavenId> deps = new MavenDepParser().findDepsFromPomXml(inFile.text)
          ClassPathCalculatorGitRefSup calculator = new ClassPathCalculatorGitRefSup()
          calculator.filesAndMavenIds.addAll deps
          outFile.text =  calculator.saveClassPath9()

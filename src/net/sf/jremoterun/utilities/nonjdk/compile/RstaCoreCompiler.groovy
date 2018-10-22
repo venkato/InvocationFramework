@@ -9,6 +9,7 @@ import net.sf.jremoterun.utilities.groovystarter.st.SetConsoleOut2
 import net.sf.jremoterun.utilities.mdep.DropshipClasspath
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.CustObjMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.CustomObjectHandlerImpl
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GroovyMavenIds
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
@@ -29,14 +30,14 @@ class RstaCoreCompiler  extends GenericCompiler {
             LatestMavenIds.rsyntaxtextarea,
             LatestMavenIds.log4jOld,
             LatestMavenIds.rstaui,
-            CustObjMavenIds.git,
+            GitMavenIds.jgit,
             LatestMavenIds.jsoup,
             LatestMavenIds.junit,
             CustObjMavenIds.commnonsLang,
             LatestMavenIds.rsyntaxtextarea,
             LatestMavenIds.jodaTime,
             LatestMavenIds.commonsCodec,
-            LatestMavenIds.commonsIo,
+            CustObjMavenIds.commonsIo,
             DropshipClasspath.ivyMavenId,
     ]
 

@@ -13,7 +13,11 @@ import net.sf.jremoterun.utilities.classpath.MavenCommonUtils
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.classpath.MavenFileType2
 import net.sf.jremoterun.utilities.classpath.MavenId
+import net.sf.jremoterun.utilities.classpath.MavenIdAndRepo
+import net.sf.jremoterun.utilities.classpath.MavenIdAndRepoContains
 import net.sf.jremoterun.utilities.classpath.MavenIdContains
+import net.sf.jremoterun.utilities.classpath.ToFileRefSelf
+import net.sf.jremoterun.utilities.nonjdk.classpath.AndroidArchive
 
 import java.util.logging.Logger
 
@@ -66,7 +70,13 @@ abstract class AddFileWithSources extends AddFilesToClassLoaderGroovy implements
     void addSourceF(File source) throws Exception {
         JrrUtilities3.checkFileExist(source)
         addSourceFImpl(source)
-        addedSourceFiles.add(source)
+        if(addedSourceFiles.contains(source)){
+            if(isLogFileAlreadyAdded){
+                log.info "source file already added ${source}"
+            }
+        }else {
+            addedSourceFiles.add(source)
+        }
     }
 
     @Override
@@ -79,18 +89,24 @@ abstract class AddFileWithSources extends AddFilesToClassLoaderGroovy implements
 
     }
 
-    @Override
-    void addSourceM(MavenId mavenId) {
-        File source = mavenCommonUtilsForSources.findMavenOrGradle(mavenId)
-        if (source == null) {
-            source = onMissingMavenSource(mavenId)
-        }
+
+    void addSourceM(MavenIdAndRepoContains mavenId) {
+        File source = addSourceMNoExceptionOnMissing(mavenId.getMavenIdAndRepo())
+
         if (source == null) {
             throw new FileNotFoundException("Failed find source for ${mavenId}");
         }
-//        if (fileTransformer.acceptFile(null, source, null)) {
         addSourceF(source)
-//        }
+    }
+
+    @Override
+    void addSourceM(MavenId mavenId) {
+        File source = addSourceMNoExceptionOnMissing(mavenId)
+
+        if (source == null) {
+            throw new FileNotFoundException("Failed find source for ${mavenId}");
+        }
+        addSourceF(source)
     }
 
     // why it is needed
@@ -150,20 +166,63 @@ abstract class AddFileWithSources extends AddFilesToClassLoaderGroovy implements
 
 
     @Override
+    File addSourceMNoExceptionOnMissing(MavenId mavenId){
+        File source = mavenCommonUtilsForSources.findMavenOrGradle(mavenId)
+        if (source == null) {
+            source = onMissingMavenSource(mavenId)
+        }
+        return source
+    }
+
+    File addSourceMNoExceptionOnMissing(MavenIdAndRepo mavenId){
+        File source = mavenCommonUtilsForSources.findMavenOrGradle(mavenId.m)
+        if (source == null) {
+            source = onMissingMavenSource(mavenId)
+        }
+        return source
+    }
+
+
+    @Override
     void addM(MavenId artifact) throws IOException {
         File file = resolveMavenId(artifact);
         if (file == null) {
             throw new FileNotFoundException(artifact.toString());
         }
-        File source = mavenCommonUtilsForSources.findMavenOrGradle(artifact);
-//        log.info "artifact : ${artifact} ${source}"
-        if (source == null) {
-            source = onMissingMavenSource(artifact);
-        }
+        File source = addSourceMNoExceptionOnMissing(artifact);
         if (source == null) {
             log.info("no source for maven : " + artifact);
         }
         addFileSourceHelper(file, source);
+    }
+
+    @Override
+    void addM(MavenIdAndRepoContains artifact) throws IOException {
+        File file = resolveMavenId(artifact.getMavenIdAndRepo());
+        if (file == null) {
+            throw new FileNotFoundException(artifact.toString());
+        }
+        File source = addSourceMNoExceptionOnMissing(artifact.getMavenIdAndRepo());
+        if (source == null) {
+            log.info("no source for maven : " + artifact);
+        }
+        addFileSourceHelper(file, source);
+    }
+
+    File onMissingMavenSource(MavenIdAndRepo mavenId) {
+        if (!downloadSources) {
+            log.info("no source for ${mavenId}")
+            return null
+        }
+        try {
+            MavenDefaultSettings.mavenDefaultSettings.mavenDependenciesResolver.downloadSource(mavenId.m,mavenId.repo)
+            File sourceFile = mavenCommonUtilsForSources.findMavenOrGradle(mavenId.m)
+//            log.info "source for ${mavenId} found ${sourceFile != null}"
+            return sourceFile
+        } catch (Throwable e) {
+            log.info "failed donwload source for ${mavenId} ${e}"
+            return null
+        }
     }
 
     File onMissingMavenSource(MavenId mavenId) {
@@ -312,29 +371,62 @@ abstract class AddFileWithSources extends AddFilesToClassLoaderGroovy implements
         }
     }
 
+    void addAar(AndroidArchive androidArchive){
+        addSourceM(androidArchive.m);
+    }
+
     @Override
     void addSourceGeneric(Object object) {
+        // no : MavenPath, URL
+        //
         switch (object) {
             case { object == null }:
                 throw new NullPointerException("object is null")
             case { object instanceof Collection }:
                 throw new IllegalArgumentException("Collection : ${object}")
-            case { object instanceof String }:
-                String s = (String) object;
-                addSourceS(s)
+            case { object instanceof AndroidArchive }:
+                addAar(object as AndroidArchive)
+                break
+            case { object instanceof MavenId }:
+                MavenId m = (MavenId) object;
+                addSourceM(m)
+                break;
+            case { object instanceof MavenIdAndRepoContains }:
+                MavenIdAndRepoContains mavenId1 = (MavenIdAndRepoContains) object;
+                addSourceM(mavenId1);
                 break;
             case { object instanceof File }:
                 File f = (File) object;
                 addSourceF(f)
                 break;
-
-            case { object instanceof MavenId }:
-                MavenId m = (MavenId) object;
-                addSourceM(m)
+            case { object instanceof URL }:
+                URL file = object as URL
+                addUrl(file)
+                break;
+            case { object instanceof String }:
+                String s = (String) object;
+                addSourceS(s)
+                break;
+            case { object instanceof BinaryWithSourceI }:
+                BinaryWithSourceI file = object as BinaryWithSourceI
+                List<File> sources = file.resolveSource();
+                if(sources==null){
+                    throw new NullPointerException("No source for ${file}")
+                }
+                if(sources.size()){
+                    throw new NullPointerException("Source size is null for ${file}")
+                }
+                sources.each {
+                    addSourceF(it)
+                }
                 break;
             case { object instanceof MavenIdContains }:
                 MavenIdContains mavenId3 = object as MavenIdContains
                 addSourceGeneric mavenId3.getM()
+                break;
+            case { object instanceof ToFileRefSelf }:
+                ToFileRefSelf toFileRefSelf = object as ToFileRefSelf
+                addSourceF toFileRefSelf.resolveToFile()
                 break;
             default:
                 CustomObjectHandler customObjectHandler = MavenDefaultSettings.mavenDefaultSettings.customObjectHandler
@@ -348,4 +440,7 @@ abstract class AddFileWithSources extends AddFilesToClassLoaderGroovy implements
         }
 
     }
+
+
+
 }

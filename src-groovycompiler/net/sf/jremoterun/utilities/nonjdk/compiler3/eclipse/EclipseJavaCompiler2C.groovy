@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import net.sf.jremoterun.JrrUtils
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.nonjdk.compiler3.GroovyCompiler
+import net.sf.jremoterun.utilities.nonjdk.compiler3.GroovyCompilerParams
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.messages.SimpleMessage
@@ -19,14 +20,59 @@ public class EclipseJavaCompiler2C implements JavaCompiler {
     private CompilerConfiguration config;
 //    List<String> additionalFlags = []
     GroovyCompiler groovyCompiler;
+    GroovyCompilerParams params;
+    public boolean rememberOutput = false
 
-    public EclipseJavaCompiler2C(CompilerConfiguration config, GroovyCompiler groovyCompiler) {
+    public EclipseJavaCompiler2C(CompilerConfiguration config, GroovyCompiler groovyCompiler,GroovyCompilerParams params) {
         this.config = config;
         this.groovyCompiler = groovyCompiler
+        this.params = params;
+        if(params==null){
+            throw new NullPointerException('params is null');
+        }
+    }
+
+    void printDebug(List<String> files){
+        if(params.printPathNotContains.size()>0){
+            List<String> file3 = files.findAll { isFileNotMatched(it) }
+            if(file3.size()==0){
+                log.info "tmpr filtered skip compiling files has zero files"
+            }else {
+                List<String> file4 = file3;
+                if (file4.size() > params.logJavacInputFilesMaxSize) {
+                    file4 = file4.subList(0, params.logJavacInputFilesMaxSize)
+                }
+                log.info "tmpr filtered skip compiling files ${file3.size()} : ${file4}"
+            }
+        }
+        if(params.printPathContains.size()>0){
+            List<String> file3 = files.findAll { isFileMatched(it) }
+            if(file3.size()==0){
+                log.info "filtered compiling files has zero files"
+            }else {
+                List<String> file4 = file3;
+                if (file4.size() > params.logJavacInputFilesMaxSize) {
+                    file4 = file4.subList(0, params.logJavacInputFilesMaxSize)
+                }
+                log.info "filtered compiling files ${file3.size()} : ${file4}"
+            }
+        }
+    }
+
+    boolean isFileNotMatched(String path1){
+        String find1 = params.printPathNotContains.find { path1.contains(it) };
+        return find1==null
+    }
+
+    boolean isFileMatched(String path1){
+        String find1 = params.printPathContains.find { path1.contains(it) };
+        return find1!=null
     }
 
     @Override
     public void compile(List<String> files, CompilationUnit cu) {
+        log.info "compiling stubs ..."
+        printDebug(files)
         String[] javacParameters = makeParameters(files, cu.getClassLoader());
         StringWriter javacOutput = new StringWriter();
         PrintWriter writer = new PrintWriter(javacOutput);
@@ -37,6 +83,7 @@ public class EclipseJavaCompiler2C implements JavaCompiler {
             if (trim2.length() > 0) {
                 log.info "${trim2}";
             }
+            log.info "compiling stubs finished fine"
         } else {
             String header = "Compile error \n${javacOutput}"
             cu.getErrorCollector().addFatalError(new SimpleMessage(header, cu));
@@ -50,7 +97,7 @@ public class EclipseJavaCompiler2C implements JavaCompiler {
 //        log.info "compilerClassLocaton = ${compilerClassLocaton}"
 //        log.info "compilerClassLocaton = ${JrrUtils.getClassLocation(org.eclipse.jdt.internal.compiler.apt.util.EclipseFileManager)}"
 
-        EclipseCompiler3 compiler3 = new EclipseCompiler3(writer, writer, false, null, null)
+        EclipseCompiler3 compiler3 = new EclipseCompiler3(writer, writer, false, null, null,rememberOutput)
 //        javacParameters = ['-help']
 //        log.info "${Arrays.toString javacParameters}"
         boolean compile = compiler3.compile(javacParameters)
@@ -122,7 +169,9 @@ public class EclipseJavaCompiler2C implements JavaCompiler {
 
         // files to compile
         params.addAll(files);
-
+        if(this.params.printJavacArgs) {
+            log.info "javacArgs : ${params}"
+        }
         return params.toArray(new String[params.size()]);
     }
 

@@ -2,6 +2,7 @@ package net.sf.jremoterun.utilities.nonjdk.classpath.console.auxp
 
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 
@@ -28,7 +29,7 @@ class CopyResourcesFromDirToDir {
                     if (extension != null && (extension == 'groovy' || extension == 'java')) {
 
                     } else {
-                        FileUtils.copyFile(it, destFile2)
+                        FileUtilsJrr.copyFile(it, destFile2)
                     }
                 }
             }

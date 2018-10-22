@@ -1,7 +1,11 @@
 package net.sf.jremoterun.utilities.nonjdk.tcpmon;
 
 import groovy.transform.CompileStatic;
+import net.sf.jremoterun.utilities.JrrClassUtils;
 import org.apache.logging.log4j.LogManager;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * class to simulate slow connections by slowing down the system
@@ -9,7 +13,7 @@ import org.apache.logging.log4j.LogManager;
 @CompileStatic
 public class SlowLinkSimulator {
 
-    private static final org.apache.logging.log4j.Logger log = LogManager.getLogger();
+    private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     public final int delayBytes;
 
@@ -77,7 +81,7 @@ public class SlowLinkSimulator {
                 try {
                     Thread.sleep(delay);
                 } catch (final InterruptedException e) {
-                    log.info(e);
+                    log.log(Level.INFO,"",e);
                 }
             }
         }

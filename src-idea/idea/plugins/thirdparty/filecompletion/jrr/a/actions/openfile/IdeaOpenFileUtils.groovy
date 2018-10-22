@@ -131,9 +131,10 @@ class IdeaOpenFileUtils {
             return null
         }
         log.debug "cp 1"
-        if (psiElement.parent instanceof GrReferenceExpression) {
+        PsiElement parent3 = psiElement.parent
+        if (parent3 instanceof GrReferenceExpression) {
             log.debug "cp 2"
-            GrReferenceExpression e = (GrReferenceExpression) psiElement.parent;
+            GrReferenceExpression e = (GrReferenceExpression) parent3;
             PsiType type = e.type;
             if (type instanceof PsiClassType) {
                 log.debug "cp 3"
@@ -155,8 +156,8 @@ class IdeaOpenFileUtils {
             }
             return null
         } else {
-            File file1 = MyAcceptFileProviderImpl.findFileFromVarGeneric(psiElement.parent)
-            log.debug "found : ${file1} ${psiElement.parent}"
+            File file1 = MyAcceptFileProviderImpl.findFileFromVarGeneric(parent3)
+            log.debug "found : ${file1} ${parent3}"
             return file1
 
         }

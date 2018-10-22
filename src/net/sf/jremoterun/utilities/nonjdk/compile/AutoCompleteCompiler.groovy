@@ -6,6 +6,9 @@ import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.classpath.CustomObjectHandler
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.classpath.MavenId
+import net.sf.jremoterun.utilities.nonjdk.FileUtilsJrr
+import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.FileChildLazyRef
+import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitSomeRefs
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.LatestMavenIds
 import net.sf.jremoterun.utilities.nonjdk.git.GitRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitSpec
@@ -24,8 +27,7 @@ class AutoCompleteCompiler {
     public static GitSpec gitSpec = new GitSpec('https://github.com/venkato/AutoComplete')
 
     EclipseJavaCompilerPure compilerPure = new EclipseJavaCompilerPure();
-    GitRef gitRefSrc = new GitRef(gitSpec, 'src/main/java')
-    GitRef gitRefResources = new GitRef(gitSpec, 'src/main/resources')
+    FileChildLazyRef gitRefResources = GitSomeRefs.rstaAutoCompetionVenkato.childL(  'src/main/resources')
 
 
     CustomObjectHandler handler = MavenDefaultSettings.mavenDefaultSettings.customObjectHandler
@@ -48,9 +50,9 @@ class AutoCompleteCompiler {
 
     void addDefaulSrc() {
         if (autoComplDir == null) {
-            autoComplDir = handler.resolveToFile(gitSpec)
+            autoComplDir = GitSomeRefs.rstaAutoCompetionVenkato.resolveToFile()
         }
-        compilerPure.addInDir handler.resolveToFile(gitRefSrc)
+        compilerPure.addInDir GitSomeRefs.rstaAutoCompetionVenkato.childL( 'src/main/java')
         compilerPure.outputDir = new File(autoComplDir, 'build')
         compilerPure.outputDir.mkdirs()
     }
@@ -58,7 +60,7 @@ class AutoCompleteCompiler {
     File dist
 
     void zip() {
-        FileUtils.copyDirectory(handler.resolveToFile(gitRefResources), compilerPure.outputDir)
+        FileUtilsJrr.copyDirectory(handler.resolveToFile(gitRefResources), compilerPure.outputDir)
         dist = new File(autoComplDir, 'dist/AutoComplete.jar')
         dist.parentFile.mkdir()
         dist.delete()

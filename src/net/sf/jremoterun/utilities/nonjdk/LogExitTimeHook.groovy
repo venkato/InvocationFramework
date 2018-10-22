@@ -12,6 +12,7 @@ public class LogExitTimeHook implements Runnable {
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
     private static volatile boolean added = false;
+    public static volatile boolean systemExitCalled = false;
 
     public static void addShutDownHook() {
         if (added) {
@@ -25,8 +26,9 @@ public class LogExitTimeHook implements Runnable {
 
     @Override
     public void run() {
-        log.info(new Date().toString());
+        systemExitCalled = true
         System.out.println("exit " + new Date());
+        log.info(new Date().toString());
     }
 
 }

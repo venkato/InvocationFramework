@@ -4,11 +4,13 @@ import groovy.transform.CompileStatic
 import idea.plugins.thirdparty.filecompletion.jrr.InitPlugin2
 import net.sf.jremoterun.SimpleFindParentClassLoader
 import net.sf.jremoterun.utilities.JrrClassUtils
+import net.sf.jremoterun.utilities.JrrUtilities
 import net.sf.jremoterun.utilities.nonjdk.LogExitTimeHook
 import net.sf.jremoterun.utilities.nonjdk.classpath.refs.GitReferences
 import net.sf.jremoterun.utilities.nonjdk.idea.init.IdeaClasspathAdd
 import net.sf.jremoterun.utilities.nonjdk.log.Log4j2Utils
 
+import java.util.logging.Level
 import java.util.logging.Logger
 
 @CompileStatic
@@ -28,7 +30,13 @@ class IdeaInit4 implements Runnable{
 
         }else {
             inited = true
-            initImpl()
+            try {
+                initImpl()
+            }catch(Throwable e){
+                log.log(Level.SEVERE,"failed init idea ",e);
+                JrrUtilities.showException("failed init idea ",e);
+                throw e;
+            }
         }
     }
 

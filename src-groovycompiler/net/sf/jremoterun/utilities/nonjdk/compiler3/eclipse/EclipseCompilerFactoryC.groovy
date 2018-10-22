@@ -3,6 +3,7 @@ package net.sf.jremoterun.utilities.nonjdk.compiler3.eclipse
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.nonjdk.compiler3.GroovyCompiler
+import net.sf.jremoterun.utilities.nonjdk.compiler3.GroovyCompilerParams
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.tools.javac.JavaCompiler
 import org.codehaus.groovy.tools.javac.JavacCompilerFactory
@@ -21,15 +22,18 @@ class EclipseCompilerFactoryC extends JavacCompilerFactory{
 
     EclipseJavaCompiler2C javaCompilerC ;
 
-    GroovyCompiler groovyCompiler
+    GroovyCompiler groovyCompiler;
 
-    EclipseCompilerFactoryC(GroovyCompiler groovyCompiler) {
+    GroovyCompilerParams params;
+
+    EclipseCompilerFactoryC(GroovyCompiler groovyCompiler,  GroovyCompilerParams params) {
         this.groovyCompiler = groovyCompiler
+        this.params = params;
     }
 
     @Override
     JavaCompiler createCompiler(CompilerConfiguration config) {
-        javaCompilerC =  new EclipseJavaCompiler2C(config,groovyCompiler)
+        javaCompilerC =  new EclipseJavaCompiler2C(config,groovyCompiler,params)
         return javaCompilerC;
     }
 }

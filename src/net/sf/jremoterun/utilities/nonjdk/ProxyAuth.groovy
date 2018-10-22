@@ -5,6 +5,7 @@ import groovy.transform.CompileStatic;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 
+// see : org.apache.ivy.util.url.IvyAuthenticator
 @CompileStatic
 public class ProxyAuth extends Authenticator {
     private PasswordAuthentication auth;

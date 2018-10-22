@@ -1,8 +1,9 @@
 package net.sf.jremoterun.utilities.nonjdk.store;
 
 import net.sf.jremoterun.utilities.JrrClassUtils
-import net.sf.jremoterun.utilities.nonjdk.classpath.sl.GroovySettingsLoader;
+import net.sf.jremoterun.utilities.nonjdk.classpath.sl.GroovySettingsLoader
 
+import java.text.SimpleDateFormat;
 import java.util.logging.Logger;
 import groovy.transform.CompileStatic;
 
@@ -31,7 +32,7 @@ class MapStore {
         }.join("\n")
 
         String s3 = """
-// created at ${new Date().format('yyyy-MM-dd  HH:mm')}
+// created at ${new SimpleDateFormat('yyyy-MM-dd  HH:mm').format(new Date())} ;
 Map<File,String> b = a ;
 ${s}
 """

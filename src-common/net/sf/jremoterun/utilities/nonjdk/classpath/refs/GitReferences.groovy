@@ -1,6 +1,8 @@
 package net.sf.jremoterun.utilities.nonjdk.classpath.refs
 
 import groovy.transform.CompileStatic
+import net.sf.jremoterun.utilities.classpath.BinaryWithSource2
+import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.FileChildLazyRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitBinaryAndSourceRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitRef
 import net.sf.jremoterun.utilities.nonjdk.git.GitSpec
@@ -12,79 +14,85 @@ class GitReferences {
 //    public static GitBinaryAndSourceRef jtermSsh = JeditermBinRefs.jtermSsh.ref
 
 //    public static GitBinaryAndSourceRef jtermPty = JeditermBinRefs.jtermPty.ref
-    public static GitSpec jtermGitSpec = new GitSpec('https://github.com/JetBrains/jediterm')
+
 
 //    public static GitRef jtermSrc = new GitRef('https://github.com/JetBrains/jediterm', 'terminal/src')
 
-    public static GitRef pty4jLinuxLibs = new GitRef('https://github.com/traff/pty4j', 'os')
-    public static GitRef pty4jSrc = new GitRef('https://github.com/traff/pty4j', 'src')
-    public static GitRef purejavacommTraffSrc = new GitRef('https://github.com/traff/purejavacomm', 'src')
+    public static FileChildLazyRef pty4jLinuxLibs =   GitSomeRefs.pty4jTraff.childL('os')
+    public static FileChildLazyRef pty4jSrc = GitSomeRefs.pty4jTraff.childL('src')
+    public static FileChildLazyRef pty4jJetbrainsSrc =  GitSomeRefs.pty4jJetBrains.childL( 'src')
+    public static FileChildLazyRef purejavacommTraffSrc = GitSomeRefs.purejavacommTraff.childL( 'src')
+    public static FileChildLazyRef pureJavacommnyHolkuSrc = GitSomeRefs.purejavacommNyholku.childL(  'src')
 
     public
-    static GitBinaryAndSourceRef rsta = new GitBinaryAndSourceRef('https://github.com/venkato/RSTALanguageSupport', 'build/rsta.jar', 'src/main/java')
+    static GitBinaryAndSourceRef rsta =   new GitBinaryAndSourceRef(GitSomeRefs.rstaVenkato, 'build/rsta.jar', 'src/main/java')
 
     public
-    static GitBinaryAndSourceRef javaDecompiler = new GitBinaryAndSourceRef('https://github.com/Konloch/bytecode-viewer', 'BytecodeViewer 2.9.8.jar', 'src/main/java')
-
-
-    public
-    static GitBinaryAndSourceRef rstaAutoCompetion = new GitBinaryAndSourceRef('https://github.com/venkato/AutoComplete', 'dist/AutoComplete.jar', 'src/main/java')
-
-    public static GitSpec ifFramework = new GitSpec("https://github.com/venkato/InvocationFramework")
-
-    public static GitSpec starter = new GitSpec("https://github.com/venkato/starter3")
-
-    public static GitRef groovyRunner = new GitRef(starter, 'firstdownload/groovyrunner.groovy')
-
-    public static GitRef groovyClasspathDir = new GitRef(starter, 'libs/copy')
-
-    public static GitRef sshConsole = new GitRef("https://github.com/venkato/ssh-consoles", "src")
-
-    public static GitRef firstdownloadGitRef = new GitRef("https://github.com/venkato/firstdownload", "src")
-
-    public static GitRef sshConsoleImages = new GitRef(sshConsole.repo, "images")
-
-
-    public static GitRef jnaplatext = new GitRef('https://github.com/malyn/jnaplatext', 'src')
-
-
-    public static GitSpec rdesktop = new GitSpec('https://github.com/kohsuke/properjavardp')
-
-    public
-    static GitBinaryAndSourceRef socketGuiTest = new GitBinaryAndSourceRef('https://github.com/akshath/SocketTest', 'dist/SocketTest.jar', 'src')
-
-    public
-    static GitRef eclipseBatchCompiler = new GitRef("https://github.com/groovy/groovy-eclipse", "base/org.eclipse.jdt.groovy.core/src")
-
-    public static GitRef helfySrc = new GitRef("https://github.com/xardazz/helfy", "src")
-
-    public static GitRef helfyTest = new GitRef("https://github.com/xardazz/helfy", "test")
-
-    public
-    static GitRef eclipseFileCompiltion = new GitRef("https://github.com/impetuouslab/eclipse-filecompletion", "filecompletion/org.impetuouslab.eclipse.filecompletion/src")
-
-
-    public static GitSpec jnaRepo = new GitSpec("https://github.com/venkato/jna")
+    static GitBinaryAndSourceRef javaDecompiler = new GitBinaryAndSourceRef(GitSomeRefs.javaDecompiler, 'BytecodeViewer 2.9.8.jar', 'src/main/java')
 
 
     public
-    static GitBinaryAndSourceRef jnaJvmti = new GitBinaryAndSourceRef(jnaRepo, 'build/jvmti.jar', 'src-jvmtiutils')
+    static GitBinaryAndSourceRef rstaAutoCompetion = new GitBinaryAndSourceRef(GitSomeRefs.rstaAutoCompetionVenkato, 'dist/AutoComplete.jar', 'src/main/java')
 
-    public static GitBinaryAndSourceRef jnaCore = new GitBinaryAndSourceRef(jnaRepo, 'build/jna_core.jar', 'jna/src')
 
-    public static GitRef jnaJvmtiResourcesDir = new GitRef(jnaRepo, 'jvmti-resources')
+    @Deprecated
+    public static FileChildLazyRef groovyRunner = JrrStarterJarRefs.groovyRunner
 
-    public static GitRef androidR8 = new GitRef('https://r8.googlesource.com/r8', 'src/main/java')
+    @Deprecated
+    public static FileChildLazyRef groovyClasspathDir = JrrStarterJarRefs.groovyClasspathDir
 
-    public static GitSpec jhexViewer = new GitSpec('https://github.com/google/binnavi')
+    public static FileChildLazyRef sshConsole = GitSomeRefs.sshConsole.childL("src")
 
-    // https://github.com/lbalazscs/Pixelitor
-    // https://github.com/statickidz/SimpleNotepad-Swing
+    public static FileChildLazyRef firstdownloadGitRef = GitSomeRefs.firstdownloadGitRef.childL( "src")
+
+    public static FileChildLazyRef sshConsoleImages = GitSomeRefs.sshConsole.childL( "images")
+
+
+    public static FileChildLazyRef jnaplatext = GitSomeRefs.jnaplatext.childL( 'src')
+
+
 
     public
-    static GitRef eclipseGithubApi = new GitRef('https://github.com/eclipse/egit-github', 'org.eclipse.egit.github.core/src')
+    static GitBinaryAndSourceRef socketGuiTest = new GitBinaryAndSourceRef(GitSomeRefs.socketGuiTest, 'dist/SocketTest.jar', 'src')
 
-    public static GitSpec dockingFrames = new GitSpec('https://github.com/Benoker/DockingFrames')
+    public
+    static FileChildLazyRef eclipseBatchCompiler = GitSomeRefs.eclipseBatchCompiler.childL( "base/org.eclipse.jdt.groovy.core/src")
+
+    public static FileChildLazyRef helfySrc = GitSomeRefs.helfy.childL( "src")
+
+    public static FileChildLazyRef helfyTest =  GitSomeRefs.helfy.childL( "test")
+
+    public
+    static FileChildLazyRef eclipseFileCompiltion = GitSomeRefs.eclipseFileCompiltion.childL("filecompletion/org.impetuouslab.eclipse.filecompletion/src")
+
+
+    public static FileChildLazyRef jschDocumentationRef = GitSomeRefs.jschDocumentationRef.childL('src/main/java')
+
+    public static BinaryWithSource2 jschDocumentationBinWithSrc =  new BinaryWithSource2(  LatestMavenIds.jcraft, jschDocumentationRef)
+
+    public
+    static GitBinaryAndSourceRef jnaJvmti = new GitBinaryAndSourceRef(GitSomeRefs.jnaRepo, 'build/jvmti.jar', 'src-jvmtiutils')
+
+    public static GitBinaryAndSourceRef jnaCore = new GitBinaryAndSourceRef(GitSomeRefs.jnaRepo, 'build/jna_core.jar', 'jna/src')
+
+    @Deprecated
+    public static GitRef jnaJvmtiResourcesDir = new GitRef (GitSomeRefs.jnaRepo.getGitSpec().repo,'jvmti-resources');
+    public static FileChildLazyRef jnaJvmtiResourcesDir2 = GitSomeRefs.jnaRepo.childL( 'jvmti-resources')
+
+
+    public static FileChildLazyRef androidR8 = GitSomeRefs.androidR8.childL( 'src/main/java')
+
+    /**
+     * Used in {@link org.jna.jvmtiutils.JnaNativeMethods}
+     */
+    @Deprecated
+    public static GitSpec jnaRepo = GitSomeRefs.jnaRepo.gitSpec
+
+
+
+    public
+    static FileChildLazyRef eclipseGithubApi = GitSomeRefs.eclipseGithubApi.childL( 'org.eclipse.egit.github.core/src')
+
 
 
 }

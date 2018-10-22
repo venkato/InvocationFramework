@@ -11,6 +11,7 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.util.ProcessingContext
 import groovy.transform.CompileStatic
 import idea.plugins.thirdparty.filecompletion.jrr.IdeaMagic
+import idea.plugins.thirdparty.filecompletion.jrr.a.actions.CompletionProviderCommon
 import idea.plugins.thirdparty.filecompletion.jrr.a.file.MyAcceptFileProviderImpl
 import idea.plugins.thirdparty.filecompletion.jrr.a.javassist.JavassistCompletionBean
 import idea.plugins.thirdparty.filecompletion.share.OSIntegrationIdea
@@ -23,18 +24,20 @@ import javax.swing.*
 import java.nio.charset.Charset
 
 @CompileStatic
-public class CharsetCompletionProviderImpl extends CompletionProvider<CompletionParameters> {
+public class CharsetCompletionProviderImpl extends CompletionProviderCommon {
 
     private static final Logger log = LogManager.getLogger(JrrClassUtils.currentClass);
 
     static Icon timeZoneIcon = IconLoader.getIcon('/icons/time_zone.png', OSIntegrationIdea);
 
     //static Map<String,Charset> timeZones = Charset.availableCharsets();
-    static List<String> charsets = (List)Charset.availableCharsets().values().collect {it.aliases()}.flatten();
+    static List<String> charsets = (List) Charset.availableCharsets().values().collect { it.aliases() }.flatten();
 
-    @Override
-    protected void addCompletions(
-            @NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
+
+
+
+        @Override
+    protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
         PsiElement psiElement = parameters.position;
         if (!(psiElement instanceof LeafPsiElement)) {
             return;
@@ -45,9 +48,8 @@ public class CharsetCompletionProviderImpl extends CompletionProvider<Completion
 //        String realValue = value4.replace(IdeaMagic.addedConstant, '');
 
 
-
         String realValue = completionBean.getValueInLiteral();
-       assert realValue!=null
+        assert realValue != null
 
 
         //int offset = value4.indexOf(IdeaMagic.addedConstant);

@@ -20,6 +20,9 @@ abstract class AppRunner {
 
     abstract void runProcesses();
 
+    /**
+     * Delay in ms
+     */
     public long sleepTime = 600_000;
 
     void askToRunNewThread() throws Exception {
@@ -27,10 +30,14 @@ abstract class AppRunner {
             try {
                 askToRun()
             } catch (Throwable e) {
-                JrrUtilities.showException("Failed run ${taskGroupName}", e);
+                onException(e)
             }
         }
         new Thread(r, "${taskGroupName}").start()
+    }
+
+    void onException(Throwable e){
+        JrrUtilities.showException("Failed run ${taskGroupName}", e);
     }
 
     void askToRun() throws Exception {

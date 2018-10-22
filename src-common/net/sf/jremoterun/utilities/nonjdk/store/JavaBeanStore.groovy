@@ -13,17 +13,32 @@ class JavaBeanStore {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
+//    public static String varFieldName ='b'
+
+
+    Writer6Sub createWriter(JavaBean javaBean){
+        return new Writer7Sub(javaBean.getClass())
+    }
+
+    ObjectWriter createObjectWriter(){
+        return new ObjectWriter()
+    }
+
     static String save3(JavaBean javaBean) {
-        Writer3Sub writer3 = new Writer3Sub()
-        ObjectWriter objectWriter = new ObjectWriter()
+        return new JavaBeanStore().saveS(javaBean)
+    }
+
+    String saveS(JavaBean javaBean) {
+        Writer6Sub writer3 = createWriter(javaBean)
+        ObjectWriter objectWriter = createObjectWriter()
         Class beanClass = javaBean.class;
         writer3.addImport(beanClass)
-        writer3.body.add "${beanClass.simpleName} b = ${writer3.generateGetProperty(ClasspathConfigurator.varName)} as ${beanClass.simpleName};" as String
+//        writer3.body.add "${beanClass.simpleName} b = ${writer3.generateGetProperty(ClasspathConfigurator.varName)} as ${beanClass.simpleName};" as String
         if (javaBean instanceof JavaBeanCustomSaver) {
             JavaBeanCustomSaver customSaver = (JavaBeanCustomSaver) javaBean;
-            writer3.body.addAll customSaver.save('b', writer3, objectWriter)
+            writer3.body.addAll customSaver.save(Writer6Sub.varName, writer3, objectWriter)
         }else{
-            writer3.body.addAll save('b', javaBean, writer3, objectWriter,false)
+            writer3.body.addAll save(Writer6Sub.varName, javaBean, writer3, objectWriter,false)
         }
         return writer3.buildResult()
     }

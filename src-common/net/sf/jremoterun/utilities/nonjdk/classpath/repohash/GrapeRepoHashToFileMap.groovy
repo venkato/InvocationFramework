@@ -6,6 +6,9 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.classpath.MavenCommonUtils
 import net.sf.jremoterun.utilities.classpath.MavenDefaultSettings
 import net.sf.jremoterun.utilities.classpath.MavenId
+import net.sf.jremoterun.utilities.classpath.ToFileRef2
+import net.sf.jremoterun.utilities.nonjdk.BaseDirSetting
+import net.sf.jremoterun.utilities.nonjdk.classpath.helpers.FileChildLazyRef
 import net.sf.jremoterun.utilities.nonjdk.ideadep.LongTaskInfo
 import org.apache.commons.codec.digest.DigestUtils
 
@@ -25,14 +28,14 @@ class GrapeRepoHashToFileMap {
 
 
     public
-    static File noMavenIdFilesJsonDefault = new File(MavenDefaultSettings.mavenDefaultSettings.userHome, "jrr/configs/ivy_hash_cache2.json")
+    static ToFileRef2 noMavenIdFilesJsonDefault = BaseDirSetting.baseDirSetting.childL("configs/ivy_hash_cache2.json")
 
 
     void init(LongTaskInfo longTaskInfo) {
         Date start = new Date()
         Map<File, String> fileCache3 = [:]
 
-        fileCache3.putAll(File2HashMapJsonSaver.readJson2(noMavenIdFilesJsonDefault))
+        fileCache3.putAll(File2HashMapJsonSaver.readJson2(noMavenIdFilesJsonDefault.resolveToFile()))
 
         mavenCommonUtils.mavenDefaultSettings.grapeLocalDir.eachFileRecurse(FileType.FILES, {
 
@@ -71,7 +74,7 @@ class GrapeRepoHashToFileMap {
             }
         })
         initTime = System.currentTimeMillis() - start.time
-        File2HashMapJsonSaver.saveToJson(fileCache3, noMavenIdFilesJsonDefault)
+        File2HashMapJsonSaver.saveToJson(fileCache3, noMavenIdFilesJsonDefault.resolveToFile())
     }
 
 

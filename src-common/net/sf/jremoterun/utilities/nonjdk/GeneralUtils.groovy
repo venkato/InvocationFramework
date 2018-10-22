@@ -2,9 +2,10 @@ package net.sf.jremoterun.utilities.nonjdk
 
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
-import net.sf.jremoterun.utilities.nonjdk.classpath.tester.ClasspathTester
-import org.apache.commons.io.output.TeeOutputStream
+import net.sf.jremoterun.utilities.nonjdk.nativeprocess.NativeProcessResult
 
+import java.text.SimpleDateFormat
+import java.util.logging.Level
 import java.util.logging.Logger
 
 @CompileStatic
@@ -12,17 +13,19 @@ class GeneralUtils {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
-    static List<String> defaultEnv = createDefaultEnv2()
+
+    public static long defaultLogIntervalInSeconds = 3600
+
 
     static Thread startLogTimer() {
-        startLogTimer(3600_000)
+        startLogTimer(defaultLogIntervalInSeconds * 1000)
     }
 
     static Thread startLogTimer(long interval) {
         Runnable r = {
             while (true) {
                 Thread.sleep(interval)
-                println "Log time : ${new Date().format("yyyy-MM-dd HH:mm:ss")}"
+                println "Log time : ${new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())}"
             }
 
         }
@@ -32,81 +35,93 @@ class GeneralUtils {
         return thread
     }
 
-    static List<String> createEnvFromMap(Map<String, String> getenv) {
-        return getenv.entrySet().collect { "${it.key}=${it.value}".toString() };
+    static void checkDiskFreeSpace(File file, long minFreeSpaceInMb) throws IOException {
+        if (!file.exists()) {
+            throw new FileNotFoundException(file.getAbsolutePath());
+        }
+        long freeSpace = file.getFreeSpace() / 1_000_000 as long;
+        if (freeSpace < minFreeSpaceInMb) {
+            throw new IOException("low free space " + freeSpace + " mb in " + file.getAbsolutePath());
+        }
     }
 
+    static Properties readPropsFromFile(File file) {
+        assert file.exists()
+        Properties props = new Properties()
+        BufferedInputStream inputStream = file.newInputStream()
+        try {
+            props.load(inputStream)
+        } finally {
+            try {
+                inputStream.close()
+            } catch (Exception e) {
+                log.log(Level.INFO, "failed close ${file}", e);
+            }
+        }
+    }
+
+    /*
+
+    @Deprecated
+    static List<String> defaultEnv = NativeProcessResult.createDefaultEnv2()
+
+    @Deprecated
     static List<String> createDefaultEnv2() {
-        return createEnvFromMap(createDefaultEnv())
+        return NativeProcessResult.createDefaultEnv2()
     }
 
+    @Deprecated
     static Map<String, String> createDefaultEnv() {
-        Map<String, String> getenv = new Hashtable<>(System.getenv());
-        getenv.remove('GROOVY_OPTS')
-        getenv.remove('groovypath')
-        getenv = getenv.findAll { it.key != null && it.key.length() > 0 && it.value != null && it.value.length() > 0 }
-        return getenv;
+        return NativeProcessResult.createDefaultEnv();
     }
 
+    @Deprecated
     static Process runNativeProcess2(String cmd, File runDir) {
         Process process = cmd.execute(defaultEnv, runDir);
         process.consumeProcessOutput(System.out, System.err);
         return process;
     }
 
+    @Deprecated
     static Process runNativeProcessWithTimeout(String cmd, File runDir, long timeoutInSec, Runnable doIfTimeout) {
         Process process = cmd.execute(defaultEnv, runDir);
-        LastByteArrayOutputStream outLast = new LastByteArrayOutputStream()
-        LastByteArrayOutputStream errLast = new LastByteArrayOutputStream()
-        OutputStream outTee = new TeeOutputStream(outLast, System.out)
-        OutputStream errTee = new TeeOutputStream(errLast, System.err)
-        process.consumeProcessOutput(outTee, errTee)
-        int exitCode = -1;
-        Runnable r = {
-            exitCode = process.waitFor()
-        }
-        Thread thread = new Thread(r)
-        thread.start()
-        thread.join(timeoutInSec * 1000)
-        if (thread.isAlive()) {
-            log.info("Process still alive : ${cmd}")
-            doIfTimeout.run();
-        } else {
-            if (exitCode != 0) {
-                String errOut = errLast.toString()
-                String outOut = outLast.toString()
-                throw new BadExitCodeException("Bad exit ${exitCode} : ${errOut},\n${outOut}")
+        NativeProcessResult processResult = new NativeProcessResult(process) {
+            @Override
+            void onTimeout() {
+                log.info("process running long : ${cmd}")
+                doIfTimeout.run()
             }
         }
+        processResult.out2.addNonClosableStream(System.out)
+        processResult.err2.addNonClosableStream(System.err)
+        processResult.timeoutInSec = timeoutInSec
+        processResult.waitWithPeriodicCheck()
         return process
     }
 
+    @Deprecated
     static Process runNativeProcess(String cmd) {
         return runNativeProcess(cmd, null, true);
     }
 
+    @Deprecated
     static void waitFinish(Process process, OutputStream outStream, OutputStream errStream, boolean exceptionOnError) {
-        LastByteArrayOutputStream outLast = new LastByteArrayOutputStream()
-        LastByteArrayOutputStream errLast = new LastByteArrayOutputStream()
-        OutputStream outTee = outStream == null ? outLast : new TeeOutputStream(outLast, outStream)
-        OutputStream errTee = errStream == null ? errLast : new TeeOutputStream(errLast, errStream)
-        Thread threadOut = process.consumeProcessOutputStream(outTee)
-        Thread threadErr = process.consumeProcessErrorStream(errTee)
-        int exitCode = process.waitFor()
-        log.fine "exit code : ${exitCode}"
-        threadOut.join()
-        threadErr.join()
-        if (exitCode != 0) {
-            String errOut = errLast.toString()
-            String outOut = outLast.toString()
-            if (exceptionOnError) {
-                throw new BadExitCodeException("Bad exit ${exitCode} : ${errOut},\n${outOut}")
-            }else{
-                log.info "bad exit code ${exitCode} : ${errOut},\n${outOut}"
+        NativeProcessResult nativeProcessResult = new NativeProcessResult(process) {
+            @Override
+            void onTimeout() {
+                log.info "process running too long"
             }
         }
+        if (outStream != null) {
+            nativeProcessResult.out2.addNonClosableStream(outStream)
+        }
+        if (errStream != null) {
+            nativeProcessResult.err2.addNonClosableStream(errStream)
+        }
+        nativeProcessResult.exceptionOnError = exceptionOnError
     }
 
+    @Deprecated
     static Process runNativeProcess(String cmd, File runDir, boolean exceptionOnError) {
         if (runDir != null) {
             assert runDir.exists()
@@ -116,14 +131,28 @@ class GeneralUtils {
         return process;
     }
 
-
-    public static void checkDiskFreeSpace(File file, long minFreeSpaceInMb) throws IOException {
-        long freeSpace = file.getFreeSpace() / 1_000_000 as long;
-        if (freeSpace < minFreeSpaceInMb) {
-            throw new IOException("low free space " + freeSpace + " mb in " + file.getAbsolutePath());
+    @Deprecated
+    static Process runNativeProcessRedirectOutputToFile(String cmd, File runDir, boolean exceptionOnError, File outputFile, int rotationDepth) {
+        if (runDir != null) {
+            assert runDir.exists()
         }
+        FileRotate.rotateFile(outputFile, rotationDepth)
+        BufferedOutputStream outputStream2 = outputFile.newOutputStream()
+        Process process = cmd.execute(defaultEnv, runDir);
+        try {
+            waitFinish(process, outputStream2, outputStream2, exceptionOnError)
+        } finally {
+            try {
+                outputStream2.flush()
+                outputStream2.close()
+            } catch (Throwable e) {
+                log.info("failed close file : ${outputFile}", e)
+            }
+
+        }
+        return process;
     }
 
-
+*/
 
 }

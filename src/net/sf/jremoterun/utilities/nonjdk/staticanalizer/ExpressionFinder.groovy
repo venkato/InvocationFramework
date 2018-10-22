@@ -67,7 +67,7 @@ class ExpressionFinder extends ClassCodeVisitorSupport {
     void castExpressionImpl2(Expression parentExpression, ConstantExpression ce, boolean isFileExp){
         String text = ce.text
         ElementMethodGroovy elementMethodGroovy = new ElementMethodGroovy();
-        elementMethodGroovy.expression=parentExpression;
+        elementMethodGroovy.expression =parentExpression;
         elementMethodGroovy.fieldName = methodName
         elementMethodGroovy.className = elName
         elementMethodGroovy.printablePath = printablePath

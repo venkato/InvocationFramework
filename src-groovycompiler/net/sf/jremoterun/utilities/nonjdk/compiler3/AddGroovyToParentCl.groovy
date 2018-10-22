@@ -14,7 +14,8 @@ class AddGroovyToParentCl {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
-    public static AddGroovyToParentCl defaultAddtoParentCl = new AddGroovyToParentCl();
+    public static volatile AddGroovyToParentCl defaultAddtoParentCl = new AddGroovyToParentCl();
+
 
 
     void addGroovyJarToParentClassLoader(AddFilesToClassLoaderCommon adderParent){

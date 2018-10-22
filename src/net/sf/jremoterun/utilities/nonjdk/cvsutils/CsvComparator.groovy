@@ -6,12 +6,21 @@ import net.sf.jremoterun.utilities.JrrClassUtils
 
 import java.util.logging.Logger
 
+
 @CompileStatic
 abstract class CsvComparator {
 
     private static final Logger log = JrrClassUtils.getJdkLogForCurrentClass();
 
+    /**
+     * Columns id starts with 0
+     */
     List<Integer> skipColumns = []
+
+
+    /**
+     * Columns id starts with 0
+     */
     List<Integer> columnsIds = []
 
     CSVReader csvReader
@@ -24,7 +33,7 @@ abstract class CsvComparator {
 
     abstract void writeLine(List<String> line)
 
-    abstract customLineProcessing(List<String> line2)
+    abstract List<String> customLineProcessing(List<String> line2)
 
 
     /**
@@ -32,9 +41,10 @@ abstract class CsvComparator {
      */
     void processLines() {
         createReader()
-        assert csvReader!=null
+        assert csvReader != null
         readHeader()
         headerRead()
+        skipColumns = skipColumns.sort().reverse()
         doChecks()
         currentLine = header
         processLine()
@@ -49,7 +59,12 @@ abstract class CsvComparator {
                 onDiffColumnCount()
             }
             printProgressIfNeeded()
-            processLine()
+            try {
+                processLine()
+            } catch (Throwable e) {
+                log.info "failed process ${currentLine} : ${e}"
+                throw e
+            }
         }
     }
 
@@ -87,12 +102,12 @@ abstract class CsvComparator {
     }
 
     void processLine() {
-        List<String> line = currentLine
+        final List<String> line = currentLine
         List<String> line2 = new ArrayList<>(line)
-        customLineProcessing(line2)
+        line2 = customLineProcessing(line2)
         List<String> idColumns = columnsIds.collect { line.get(it) }
         skipColumns.collect { line2.remove(it) }
-        line2.addAll(0 , idColumns)
+        line2.addAll(0, idColumns)
         writeLine(line2)
     }
 

@@ -4,9 +4,10 @@ import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.classpath.MavenId
 import net.sf.jremoterun.utilities.classpath.MavenIdContains
 import net.sf.jremoterun.utilities.mdep.DropshipClasspath
+import net.sf.jremoterun.utilities.nonjdk.enumutils.EnumNameProvider
 
 @CompileStatic
-enum AntMavenIds implements MavenIdContains {
+enum AntMavenIds implements MavenIdContains , EnumNameProvider{
 
     ant,
     ant_antlr,
@@ -28,5 +29,8 @@ enum AntMavenIds implements MavenIdContains {
 
     public static List<? extends MavenIdContains> all = (List) values().toList()
 
-
+    @Override
+    String getCustomName() {
+        return m.artifactId
+    }
 }

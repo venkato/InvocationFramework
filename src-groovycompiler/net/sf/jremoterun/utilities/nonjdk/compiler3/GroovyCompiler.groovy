@@ -27,30 +27,32 @@ class GroovyCompiler {
     File outDir
     final GroovyClassLoader groovyClassLoader3;
     AddFilesToUrlClassLoaderGroovy addFilesToUrlClassLoaderGroovy;
-    Map<String, Object> jointCompilationOptions = [:]
     List<String> additionalFlags = ['-g']
     JavacCompilerFactory compilerFactory;
     boolean eclipseCompiler
 
-    GroovyCompiler(File outDir,boolean eclipseCompiler) {
-        this.eclipseCompiler = eclipseCompiler
-        if(eclipseCompiler){
-            compilerFactory = new EclipseCompilerFactoryC(this)
-        }else{
-            Class clazz = javacCnr.loadClass(JrrClassUtils.currentClassLoader)
-            compilerFactory = JrrClassUtils.invokeConstructor(clazz,this) as JavacCompilerFactory
+    GroovyCompiler(GroovyCompilerParams params) {
+        this.eclipseCompiler = params.eclipseCompiler
+        if (eclipseCompiler) {
+            compilerFactory = new EclipseCompilerFactoryC(this, params)
+        } else {
+            Class clazz = javacCnr.loadClass(JrrClassUtils.getCurrentClassLoader())
+            compilerFactory = JrrClassUtils.invokeConstructor(clazz, this, params) as JavacCompilerFactory
         }
-        this.outDir = outDir;
+        this.outDir = params.outputDir;
         groovyClassLoader3 = JrrClassUtils.getCurrentClassLoaderGroovy();
         addFilesToUrlClassLoaderGroovy = new AddFilesToUrlClassLoaderGroovy(groovyClassLoader3);
-        jointCompilationOptions.put("stubDir", outDir);
-        configuration.setJointCompilationOptions(jointCompilationOptions)
+//        configuration.setDebug(true) -- start failing after enabing debug
+//        configuration.setVerbose(true) -- useless
+        configuration.setJointCompilationOptions(params.jointCompilationOptions)
         assert groovyClassLoader3 != null
         configuration.setTargetDirectory(outDir)
 
         unit = new JavaAwareCompilationUnit(configuration, groovyClassLoader3)
         unit.setCompilerFactory(compilerFactory)
-        JrrFieldAccessorSetter.setFieldAccessors();
+        if (params.needCustomJrrGroovyFieldsAccessors) {
+            JrrFieldAccessorSetter.setFieldAccessors();
+        }
     }
 
 
@@ -61,19 +63,20 @@ class GroovyCompiler {
 
     void addClassesInDirForCompile(File dir) {
 //        assert dir.directory
-        if(dir.isFile()){
+        if (dir.isFile()) {
             unit.addSource(dir)
-        }else {
+        } else {
             assert dir.isDirectory()
             List<File> files = []
             dir.eachFileRecurse(FileType.FILES, {
                 File f = it as File
-                String name = f.name
-                if (name.endsWith('.java') || name.endsWith('.groovy')) {
+                String name1 = f.getName()
+                if (name1.endsWith('.java') || name1.endsWith('.groovy')) {
                     files.add(f)
                 }
             })
-            unit.addSources(files.toArray(new File[0]))
+            File[] files1 = (File[]) files.toArray(new File[0])
+            unit.addSources(files1)
         }
     }
 
@@ -84,7 +87,7 @@ class GroovyCompiler {
         flags.add(javaVersion2)
         flags.add('-target')
         flags.add(javaVersion2)
-        if(eclipseCompiler){
+        if (eclipseCompiler) {
             flags.add("-${javaVersion2}".toString())
         }
 

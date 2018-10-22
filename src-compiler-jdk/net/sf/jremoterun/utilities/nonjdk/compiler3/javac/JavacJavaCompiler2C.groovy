@@ -3,6 +3,7 @@ package net.sf.jremoterun.utilities.nonjdk.compiler3.javac
 import groovy.transform.CompileStatic
 import net.sf.jremoterun.utilities.JrrClassUtils
 import net.sf.jremoterun.utilities.nonjdk.compiler3.GroovyCompiler
+import net.sf.jremoterun.utilities.nonjdk.compiler3.GroovyCompilerParams
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.messages.SimpleMessage
@@ -17,11 +18,18 @@ public class JavacJavaCompiler2C implements JavaCompiler {
     private CompilerConfiguration config;
 //    List<String> additionalFlags = []
     GroovyCompiler groovyCompiler;
+    GroovyCompilerParams params;
 
-    public JavacJavaCompiler2C(CompilerConfiguration config, GroovyCompiler groovyCompiler) {
+    public JavacJavaCompiler2C(CompilerConfiguration config, GroovyCompiler groovyCompiler,GroovyCompilerParams params) {
         this.config = config;
         this.groovyCompiler = groovyCompiler
+        this.params = params;
+        if(params==null){
+            throw new NullPointerException('params is null')
+        }
     }
+
+
 
     public void compile(List<String> files, CompilationUnit cu) {
         String[] javacParameters = makeParameters(files, cu.getClassLoader());
@@ -131,7 +139,9 @@ public class JavacJavaCompiler2C implements JavaCompiler {
 
         // files to compile
         paras.addAll(files);
-
+        if(this.params.printJavacArgs) {
+            log.info "javacArgs : ${params}"
+        }
         return paras.toArray(new String[paras.size()]);
     }
 
